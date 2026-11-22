@@ -12,7 +12,9 @@ export interface GameCode {
 
 export interface BotPublicStats {
 	guildCount: number;
+	servers: number;
 	userCount: number;
+	channelCount: number;
 	shardCount: number;
 	ping: number;
 	uptime: number;
