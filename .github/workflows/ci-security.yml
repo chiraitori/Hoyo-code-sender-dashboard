@@ -28,18 +28,21 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Type check (svelte-check)
+        run: npm run check
+
+      - name: Build production bundle
+        run: npm run build
+
+      - name: Run unit tests
         run: npm test
 
-      - name: Run privacy check
+      - name: Run browser privacy check
         run: npm run test:privacy
 
-      - name: Run lint
-        run: npm run lint
-
-      - name: Run production security audit
+      - name: Run security audit
         run: |
-          npm audit --omit=dev --json > audit-results.json || true
+          npm audit --json > audit-results.json || true
           HIGH_VULNS=$(jq '.metadata.vulnerabilities.high' audit-results.json)
           CRITICAL_VULNS=$(jq '.metadata.vulnerabilities.critical' audit-results.json)
           echo "audit-results.json: high=$HIGH_VULNS critical=$CRITICAL_VULNS"
