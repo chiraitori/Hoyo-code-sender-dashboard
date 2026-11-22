@@ -921,7 +921,7 @@
 									onclick={() => sendTest(g)}
 									class="zzz-pill zzz-btn-dark px-3.5 py-2 text-xs"
 								>
-									<span>Demo {GAME_META[g].short}</span>
+									<span>Test {GAME_META[g].short}</span>
 								</button>
 							{/each}
 						</div>
@@ -990,6 +990,8 @@
 					{settings}
 					{language}
 					{previewGame}
+					activeCodes={data.activeCodes}
+					botUser={data.botStatus?.botUser ?? null}
 					onSelectGame={(g) => (previewGame = g)}
 				/>
 

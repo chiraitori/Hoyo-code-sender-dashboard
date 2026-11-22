@@ -2,7 +2,7 @@
 	import { invalidateAll } from '$app/navigation';
 	import { slide } from 'svelte/transition';
 	import CountUp from '#lib/components/CountUp.svelte';
-	import { GAME_META, type BotCommand, type GameId, type LivestreamStatus } from '#lib/types.ts';
+	import { GAME_META, formatVersionTag, type BotCommand, type GameId, type LivestreamStatus } from '#lib/types.ts';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -116,7 +116,7 @@
 				<span>{isOnline ? 'Online' : 'Offline'}</span>
 			</div>
 			{#if data.stats?.version}
-				<div class="text-[11px] font-mono-hdd text-[#9a9aab] mt-1">v{data.stats.version}</div>
+				<div class="text-[11px] font-mono-hdd text-[#9a9aab] mt-1">{formatVersionTag(data.stats.version)}</div>
 			{/if}
 		</div>
 
@@ -237,7 +237,7 @@
 										onclick={() => (expandedCmd = isOpen ? null : cmd.name)}
 										class="zzz-pill zzz-btn-dark px-3 py-1 text-xs"
 									>
-										<span>{isOpen ? 'Hide options' : `${cmd.options!.length} options`}</span>
+										<span>{isOpen ? 'Hide options' : `${cmd.options!.length} ${cmd.options!.length === 1 ? 'option' : 'options'}`}</span>
 									</button>
 								{/if}
 								<button

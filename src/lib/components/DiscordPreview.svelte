@@ -1,6 +1,8 @@
 <script lang="ts">
 	import {
 		GAME_META,
+		formatRewardsText,
+		type GameCode,
 		type GameId,
 		type GuildDetails,
 		type ServerConfig,
@@ -14,60 +16,63 @@
 		settings: ServerSettings;
 		language: SupportedLanguage;
 		previewGame: GameId;
+		activeCodes: GameCode[];
+		botUser?: { username: string; avatar: string | null } | null;
 		onSelectGame: (game: GameId) => void;
 	}
 
-	let { guild, config, settings, language, previewGame, onSelectGame }: Props = $props();
+	let {
+		guild,
+		config,
+		settings,
+		language,
+		previewGame,
+		activeCodes,
+		botUser = null,
+		onSelectGame
+	}: Props = $props();
 	let previewMode = $state<'regular' | 'livestream'>('regular');
-
-	const SAMPLES: Record<GameId, { code: string; rewards: string; status: string }> = {
-		zzz: {
-			code: 'ZENLESSGIFT',
-			rewards: '50 Polychrome, 2 Official Investigator Log, 3 W-Engine Power Supply',
-			status: 'Active'
-		},
-		genshin: {
-			code: 'GENSHINGIFT',
-			rewards: "50 Primogems, 3 Hero's Wit",
-			status: 'Active'
-		},
-		hsr: {
-			code: 'STARRAILGIFT',
-			rewards: "50 Stellar Jade, 2 Traveler's Guide",
-			status: 'Active'
-		}
-	};
 
 	const LANG_COPY: Record<
 		SupportedLanguage,
-		{ title: string; liveTitle: string; rewards: string; redeem: string; footer: string }
+		{ title: string; liveTitle: string; rewards: string; redeem: string; emptyLive: string; empty: string }
 	> = {
 		en: {
 			title: 'New Redemption Code',
 			liveTitle: 'Special Program Livestream Code',
 			rewards: 'Rewards',
 			redeem: 'Redeem on HoYoLAB',
-			footer: 'HoYo Code Sender'
+			emptyLive: 'No active livestream code right now',
+			empty: 'No active code right now'
 		},
 		jp: {
 			title: '新しい交換コード',
 			liveTitle: '予告番組 交換コード',
 			rewards: '報酬',
 			redeem: 'HoYoLABで交換する',
-			footer: 'HoYo Code Sender'
+			emptyLive: '現在配信中の限定コードはありません',
+			empty: '現在利用可能なコードはありません'
 		},
 		vi: {
 			title: 'Mã Đổi Thưởng Mới',
 			liveTitle: 'Mã Livestream Phiên Bản Mới',
 			rewards: 'Phần thưởng',
 			redeem: 'Đổi trên HoYoLAB',
-			footer: 'HoYo Code Sender'
+			emptyLive: 'Hiện chưa có mã livestream đang hoạt động',
+			empty: 'Hiện chưa có mã đang hoạt động'
 		}
 	};
 
 	const meta = $derived(GAME_META[previewGame]);
-	const sample = $derived(SAMPLES[previewGame]);
 	const copy = $derived(LANG_COPY[language] ?? LANG_COPY.en);
+
+	const liveCode = $derived.by(() => {
+		const pool = activeCodes.filter((c) => c.game === previewGame && !c.isExpired);
+		if (previewMode === 'livestream') {
+			return pool.find((c) => c.isLivestream) ?? null;
+		}
+		return pool.find((c) => !c.isLivestream) ?? pool[0] ?? null;
+	});
 
 	const selectedRole = $derived.by(() => {
 		const roleId =
@@ -77,8 +82,7 @@
 					? config.hsrRole
 					: config.zzzRole;
 		if (!roleId) return null;
-		const found = guild.roles.find((r) => r.id === roleId);
-		return found ?? null;
+		return guild.roles.find((r) => r.id === roleId) ?? null;
 	});
 
 	const roleBadgeStyle = $derived.by(() => {
@@ -129,7 +133,7 @@
 
 <div class="space-y-3">
 	<div class="flex flex-wrap items-center justify-between gap-2">
-		<span class="text-xs font-black text-white">Message preview</span>
+		<span class="text-xs font-black text-white">Live Discord preview</span>
 		<div class="flex items-center gap-1.5">
 			{#each (['zzz', 'genshin', 'hsr'] as GameId[]) as g}
 				<button
@@ -176,17 +180,24 @@
 		</div>
 
 		<div class="flex items-start gap-2.5">
-			<div
-				class="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 text-[#08080a]"
-				style="background: {meta.color};"
-			>
-				HC
-			</div>
+			{#if botUser?.avatar}
+				<img
+					src={botUser.avatar}
+					alt={botUser.username}
+					class="w-8 h-8 rounded-full shrink-0"
+				/>
+			{:else}
+				<div
+					class="w-8 h-8 rounded-full flex items-center justify-center font-black text-xs shrink-0 text-[#08080a]"
+					style="background: {meta.color};"
+				>
+					HC
+				</div>
+			{/if}
 			<div class="flex-1 min-w-0 space-y-1.5">
 				<div class="flex items-center gap-1.5">
-					<span class="font-bold text-white">HoYo Code Sender</span>
+					<span class="font-bold text-white">{botUser?.username || 'HoYo Code Sender'}</span>
 					<span class="px-1.5 py-0.5 rounded bg-[#5865f2] text-white text-[10px] font-bold">APP</span>
-					<span class="text-[#949ba4]">Preview</span>
 				</div>
 
 				{#if selectedRole}
@@ -202,23 +213,36 @@
 						<div class="text-[#b5bac1] font-semibold">
 							{meta.label}: {previewMode === 'livestream' ? copy.liveTitle : copy.title}
 						</div>
-						<div class="font-mono-hdd text-sm font-black text-white tracking-wider">{sample.code}</div>
-						<div>
-							<div class="text-[#949ba4] font-semibold">{copy.rewards}</div>
-							<div class="text-[#dbdee1] mt-0.5">{sample.rewards}</div>
-						</div>
-						<div class="flex items-center justify-between pt-1 text-[#949ba4]">
-							<span>{copy.footer}</span>
-							<span>{sample.status}</span>
-						</div>
+						{#if liveCode}
+							<div class="font-mono-hdd text-sm font-black text-white tracking-wider">{liveCode.code}</div>
+							<div>
+								<div class="text-[#949ba4] font-semibold">{copy.rewards}</div>
+								<div class="text-[#dbdee1] mt-0.5">{formatRewardsText(liveCode.rewards)}</div>
+							</div>
+							<div class="flex items-center justify-between pt-1 text-[#949ba4]">
+								<span>{botUser?.username || 'HoYo Code Sender'}</span>
+								<span>Live code</span>
+							</div>
+						{:else}
+							<div class="text-[#949ba4]">
+								{previewMode === 'livestream' ? copy.emptyLive : copy.empty}
+							</div>
+						{/if}
 					</div>
 				{/key}
 
-				<div class="pt-0.5">
-					<span class="inline-flex items-center px-3 py-1.5 rounded bg-[#4e5058] text-white font-semibold">
-						{copy.redeem}
-					</span>
-				</div>
+				{#if liveCode}
+					<div class="pt-0.5">
+						<a
+							href={liveCode.redeemUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="inline-flex items-center px-3 py-1.5 rounded bg-[#4e5058] hover:bg-[#5c5f69] text-white font-semibold transition-colors"
+						>
+							{copy.redeem}
+						</a>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>

@@ -11,7 +11,9 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 			? {
 					online: stats.status === 0,
 					shardCount: stats.shardCount,
-					guildCount: stats.guildCount
+					guildCount: stats.guildCount,
+					version: stats.version,
+					botUser: stats.botUser
 				}
 			: null
 	};

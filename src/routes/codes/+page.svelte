@@ -2,7 +2,7 @@
 	import { untrack } from 'svelte';
 	import { flip } from 'svelte/animate';
 	import { fade } from 'svelte/transition';
-	import { GAME_META, type GameCode, type GameId, type LivestreamStatus } from '#lib/types.ts';
+	import { GAME_META, formatRewardsText, type GameCode, type GameId, type LivestreamStatus } from '#lib/types.ts';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -280,7 +280,7 @@
 						</span>
 					</div>
 
-					<p class="text-xs text-[#a9a9b8] leading-relaxed">{item.rewards}</p>
+					<p class="text-xs text-[#a9a9b8] leading-relaxed">{formatRewardsText(item.rewards)}</p>
 
 					<div class="flex items-center justify-end gap-2 pt-3 border-t-2 border-[#2a2a34]">
 						<button

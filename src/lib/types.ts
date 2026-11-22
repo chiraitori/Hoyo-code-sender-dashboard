@@ -205,3 +205,18 @@ export const GAME_META: Record<
 export function buildRedeemUrl(game: GameId, code: string): string {
 	return `${GAME_META[game].redeemBase}${encodeURIComponent(code)}`;
 }
+
+export function formatRewardsText(raw: string): string {
+	if (!raw) return 'In-game rewards';
+	return raw
+		.split(/\s*;\s*/)
+		.map((part) => part.trim().replace(/^([^*]+)\*(\d[\d,]*)$/, '$1 ×$2'))
+		.filter(Boolean)
+		.join(' · ');
+}
+
+export function formatVersionTag(raw: string | null | undefined): string {
+	if (!raw) return '';
+	const clean = raw.trim();
+	return clean.startsWith('v') || clean.startsWith('V') ? clean : `v${clean}`;
+}

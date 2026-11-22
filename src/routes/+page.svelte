@@ -1,6 +1,12 @@
 <script lang="ts">
 	import CountUp from '#lib/components/CountUp.svelte';
-	import { GAME_META, type GameId, type LivestreamStatus } from '#lib/types.ts';
+	import {
+		GAME_META,
+		formatRewardsText,
+		formatVersionTag,
+		type GameId,
+		type LivestreamStatus
+	} from '#lib/types.ts';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -107,7 +113,7 @@
 						{/if}
 						<span class="font-bold text-white">{data.stats.botUser.username}</span>
 						{#if data.stats.version}
-							<span class="font-mono-hdd text-[#d8ff00] font-bold">v{data.stats.version}</span>
+							<span class="font-mono-hdd text-[#d8ff00] font-bold">{formatVersionTag(data.stats.version)}</span>
 						{/if}
 					</div>
 				{/if}
@@ -192,7 +198,7 @@
 								<div class="font-mono-hdd text-lg font-black tracking-wider text-white truncate">
 									{item.code}
 								</div>
-								<div class="text-xs text-[#a9a9b8] truncate">{item.rewards}</div>
+								<div class="text-xs text-[#a9a9b8] truncate">{formatRewardsText(item.rewards)}</div>
 							</div>
 
 							<div class="flex items-center gap-2 shrink-0">
