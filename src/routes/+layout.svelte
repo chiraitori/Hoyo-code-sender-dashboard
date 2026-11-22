@@ -9,10 +9,10 @@
 	let loggingOut = $state(false);
 
 	const navItems = [
-		{ href: '/', label: 'INTER-KNOT', match: (p: string) => p === '/' },
-		{ href: '/codes', label: 'COMMISSIONS', match: (p: string) => p.startsWith('/codes') },
-		{ href: '/servers', label: 'HDD ROUTING', match: (p: string) => p.startsWith('/servers') },
-		{ href: '/system', label: 'SHARD DECK', match: (p: string) => p.startsWith('/system') }
+		{ href: '/', label: 'Home', match: (p: string) => p === '/' },
+		{ href: '/codes', label: 'Codes', match: (p: string) => p.startsWith('/codes') },
+		{ href: '/servers', label: 'Servers', match: (p: string) => p.startsWith('/servers') },
+		{ href: '/system', label: 'Status', match: (p: string) => p.startsWith('/system') }
 	];
 
 	async function handleLogout() {
@@ -28,11 +28,9 @@
 </script>
 
 <div class="min-h-dvh flex flex-col">
-	<!-- ZZZ Inter-Knot Hardware Top Bar -->
 	<header class="sticky top-0 z-40 bg-[#111115]/95 backdrop-blur-sm border-b-2 border-[#08080a]">
 		<div class="h-2 w-full zzz-hazard"></div>
 		<div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
-			<!-- Brand Emblem -->
 			<a href="/" class="flex items-center gap-3 group">
 				<div
 					class="w-10 h-10 rounded-full bg-[#d8ff00] border-2 border-[#08080a] shadow-[0_3px_0_#08080a] flex items-center justify-center shrink-0 transition-transform group-hover:scale-105"
@@ -51,19 +49,15 @@
 					</svg>
 				</div>
 				<div>
-					<div class="flex items-center gap-2">
-						<span class="text-base font-black tracking-tight text-white leading-none">INTER-KNOT</span>
-						<span class="px-2 py-0.5 rounded-full bg-[#ff5d1f] text-[#08080a] font-mono-hdd text-[11px] font-black leading-none">
-							LIVE
-						</span>
+					<div class="text-base font-black tracking-tight text-white leading-none">
+						HoYo Code Sender
 					</div>
-					<div class="text-xs font-mono-hdd text-[#9a9aab] mt-0.5">
-						HOYO CODE SENDER // RANDOM PLAY HDD
+					<div class="text-xs text-[#9a9aab] mt-0.5">
+						Genshin, Star Rail &amp; ZZZ codes for Discord
 					</div>
 				</div>
 			</a>
 
-			<!-- Kinetic Slanted Pill Navigation -->
 			<nav class="flex flex-wrap items-center gap-2" aria-label="Primary Navigation">
 				{#each navItems as item}
 					{@const active = item.match(page.url.pathname)}
@@ -76,17 +70,16 @@
 				{/each}
 			</nav>
 
-			<!-- Status + Discord Session -->
 			<div class="flex items-center gap-2.5">
 				{#if data.botStatus}
 					<div
-						class="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1a1a21] border border-[#31313d] text-xs font-mono-hdd"
+						class="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1a1a21] border border-[#31313d] text-xs font-medium"
 					>
 						<span
 							class="w-2 h-2 rounded-full {data.botStatus.online ? 'bg-[#d8ff00]' : 'bg-[#ff5d1f]'}"
 						></span>
 						<span class="text-[#d8d8e4]">
-							{data.botStatus.shardCount} {data.botStatus.shardCount === 1 ? 'SHARD' : 'SHARDS'}
+							{data.botStatus.online ? 'Online' : 'Offline'}
 						</span>
 					</div>
 				{/if}
@@ -116,42 +109,40 @@
 							type="button"
 							onclick={handleLogout}
 							disabled={loggingOut}
-							class="zzz-pill zzz-btn-dark px-3 py-1.5 text-xs"
+							class="zzz-pill zzz-btn-dark px-3.5 py-1.5 text-xs"
 						>
-							<span>{loggingOut ? '...' : 'OUT'}</span>
+							<span>{loggingOut ? 'Logging out...' : 'Log out'}</span>
 						</button>
 					</div>
 				{:else}
-					<a href="/auth/login" class="zzz-pill zzz-btn-volt px-4 py-1.5 text-xs tracking-wide">
-						<span>DISCORD LOGIN</span>
+					<a href="/auth/login" class="zzz-pill zzz-btn-volt px-4 py-1.5 text-xs">
+						<span>Log in with Discord</span>
 					</a>
 				{/if}
 			</div>
 		</div>
 	</header>
 
-	<!-- Main Content -->
 	<main class="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 md:py-8">
 		{@render children()}
 	</main>
 
-	<!-- Inter-Knot Footer -->
 	<footer class="border-t-2 border-[#08080a] bg-[#111115] mt-10">
-		<div class="max-w-7xl mx-auto px-4 md:px-6 py-5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono-hdd text-[#8f8fa0]">
-			<div>HOYO CODE SENDER // NOT AFFILIATED WITH HOYOVERSE</div>
-			<div class="flex flex-wrap items-center gap-4">
-				<a href="/codes" class="hover:text-[#d8ff00] transition-colors">CODES</a>
-				<a href="/system" class="hover:text-[#d8ff00] transition-colors">SYSTEM</a>
-				<a href="/privacy" class="hover:text-[#d8ff00] transition-colors">PRIVACY</a>
-				<a href="/terms" class="hover:text-[#d8ff00] transition-colors">TERMS</a>
+		<div class="max-w-7xl mx-auto px-4 md:px-6 py-5 flex flex-wrap items-center justify-between gap-3 text-xs text-[#8f8fa0]">
+			<div>HoYo Code Sender is not affiliated with HoYoverse.</div>
+			<div class="flex flex-wrap items-center gap-4 font-semibold">
+				<a href="/codes" class="hover:text-[#d8ff00] transition-colors">Codes</a>
+				<a href="/system" class="hover:text-[#d8ff00] transition-colors">Status</a>
+				<a href="/privacy" class="hover:text-[#d8ff00] transition-colors">Privacy</a>
+				<a href="/terms" class="hover:text-[#d8ff00] transition-colors">Terms</a>
 				{#if data.inviteUrl}
 					<a
 						href={data.inviteUrl}
 						target="_blank"
 						rel="noopener noreferrer"
-						class="text-[#d8ff00] font-bold hover:underline"
+						class="text-[#d8ff00] hover:underline"
 					>
-						INVITE BOT
+						Add to Discord
 					</a>
 				{/if}
 			</div>

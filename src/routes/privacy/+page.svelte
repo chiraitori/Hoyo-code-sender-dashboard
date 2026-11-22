@@ -1,18 +1,15 @@
 <div class="max-w-3xl mx-auto zzz-card p-6 md:p-8 space-y-5">
-	<div>
-		<div class="font-mono-hdd text-xs font-black text-[#d8ff00]">// LEGAL ARCHIVE</div>
-		<h1 class="text-2xl md:text-3xl font-black text-white mt-1">PRIVACY POLICY</h1>
-	</div>
+	<h1 class="text-2xl md:text-3xl font-black text-white">Privacy Policy</h1>
 
 	<div class="space-y-4 text-sm text-[#b7b7c6] leading-relaxed">
 		<p>
-			HoYo Code Sender stores only the server configuration data required to deliver game redemption codes: Discord guild IDs, selected notification channel or forum thread IDs, optional role mention IDs, language preferences, and delivery state markers.
+			HoYo Code Sender stores only what is needed to send redemption codes to your Discord server: your server ID, selected channels or forum threads, optional ping roles, language choice, and which codes have already been posted.
 		</p>
 		<p>
-			When you sign in to this dashboard with Discord OAuth, your access token is stored strictly in an <code class="font-mono-hdd text-xs text-[#d8ff00]">HttpOnly</code> session cookie and is never exposed to client-side JavaScript or third parties. Guild permissions are verified live with Discord before any server configuration is read or modified.
+			When you log in with Discord, your session token is kept in an <code class="font-mono-hdd text-xs text-[#d8ff00]">HttpOnly</code> cookie so browser scripts cannot read it. Server permissions are checked directly with Discord before showing or updating settings.
 		</p>
 		<p>
-			Server administrators can remove all stored configuration for a guild at any time using the <strong class="text-white">Reset Config</strong> action in Server Routing or by running the bot's removal slash command in Discord.
+			Admins can delete all saved data for their server at any time using <strong class="text-white">Reset</strong> on the server settings page or via the bot's slash command in Discord.
 		</p>
 	</div>
 </div>

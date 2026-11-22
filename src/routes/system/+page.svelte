@@ -26,69 +26,55 @@
 </script>
 
 <div class="space-y-6">
-	<div class="flex flex-wrap items-end justify-between gap-3">
-		<div>
-			<div class="font-mono-hdd text-xs font-black text-[#d8ff00]">// BOT STATUS &amp; COMMANDS</div>
-			<h1 class="text-2xl md:text-3xl font-black tracking-tight text-white mt-0.5">
-				SHARD DECK &amp; SLASH COMMANDS
-			</h1>
-		</div>
+	<div>
+		<h1 class="text-2xl md:text-3xl font-black tracking-tight text-white">
+			Bot status and commands
+		</h1>
+		<p class="text-xs text-[#9a9aab] mt-1">
+			Live status and available slash commands for Discord servers.
+		</p>
 	</div>
 
-	<!-- Public Bot Telemetry Cards -->
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 		<div class="zzz-card p-4">
-			<div class="font-mono-hdd text-xs text-[#9a9aab]">BOT STATUS</div>
+			<div class="text-xs font-semibold text-[#9a9aab]">Status</div>
 			<div class="font-mono-hdd text-2xl font-black mt-1 {isOnline ? 'text-[#d8ff00]' : 'text-[#ff5d1f]'}">
-				{isOnline ? 'ONLINE' : 'OFFLINE'}
-			</div>
-			<div class="font-mono-hdd text-xs text-[#8f8fa0] mt-1">
-				{data.stats ? `${data.stats.guildCount.toLocaleString()} ACTIVE GUILDS` : 'STATUS UNAVAILABLE'}
+				{isOnline ? 'Online' : 'Offline'}
 			</div>
 		</div>
 
 		<div class="zzz-card p-4">
-			<div class="font-mono-hdd text-xs text-[#9a9aab]">DISCORD SHARDS</div>
+			<div class="text-xs font-semibold text-[#9a9aab]">Shards</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
 				{data.stats ? data.stats.shardCount : '—'}
 			</div>
-			<div class="font-mono-hdd text-xs text-[#8f8fa0] mt-1">
-				{isOnline ? 'ALL SHARDS READY' : 'WAITING FOR SIGNAL'}
-			</div>
 		</div>
 
 		<div class="zzz-card p-4">
-			<div class="font-mono-hdd text-xs text-[#9a9aab]">UPTIME</div>
+			<div class="text-xs font-semibold text-[#9a9aab]">Uptime</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
 				{data.stats ? formatUptime(data.stats.uptime) : '—'}
 			</div>
-			<div class="font-mono-hdd text-xs text-[#8f8fa0] mt-1">
-				VERSION // {data.stats?.version ?? '—'}
-			</div>
 		</div>
 
 		<div class="zzz-card p-4">
-			<div class="font-mono-hdd text-xs text-[#9a9aab]">DISCORD GATEWAY</div>
+			<div class="text-xs font-semibold text-[#9a9aab]">Gateway ping</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
 				{data.stats && data.stats.ping >= 0 ? `${data.stats.ping} ms` : '—'}
-			</div>
-			<div class="font-mono-hdd text-xs text-[#8f8fa0] mt-1">
-				{data.stats ? `${data.stats.userCount.toLocaleString()} REACHED USERS` : 'LATENCY UNAVAILABLE'}
 			</div>
 		</div>
 	</div>
 
-	<!-- Slash Command Directory -->
 	<section class="zzz-card overflow-hidden">
 		<div class="px-5 py-3.5 bg-[#131318] border-b-2 border-[#08080a] flex flex-wrap items-center justify-between gap-3">
 			<div class="flex items-center gap-2.5">
-				<span class="font-mono-hdd text-xs font-black text-white">REGISTERED SLASH COMMANDS</span>
-				<span class="font-mono-hdd text-xs text-[#d8ff00]">{filteredCommands.length} SHOWN</span>
+				<span class="text-sm font-black text-white">Slash commands</span>
+				<span class="font-mono-hdd text-xs font-bold text-[#d8ff00]">{filteredCommands.length}</span>
 			</div>
 			<input
 				type="text"
 				bind:value={cmdQuery}
-				placeholder="Filter commands..."
+				placeholder="Search commands..."
 				class="zzz-input px-3 py-1.5 text-xs font-semibold w-full sm:w-60"
 			/>
 		</div>
@@ -104,8 +90,8 @@
 							<span class="text-xs text-[#c7c7d4]">{cmd.description}</span>
 						</div>
 						{#if cmd.options && cmd.options.length > 0}
-							<span class="font-mono-hdd text-xs text-[#8f8fa0] shrink-0">
-								{cmd.options.length} {cmd.options.length === 1 ? 'OPT' : 'OPTS'}
+							<span class="text-xs text-[#8f8fa0] shrink-0">
+								{cmd.options.length} {cmd.options.length === 1 ? 'option' : 'options'}
 							</span>
 						{/if}
 					</div>
@@ -113,7 +99,7 @@
 			</div>
 		{:else}
 			<div class="p-8 text-center text-xs text-[#9a9aab]">
-				Slash commands will appear here once the bot is connected.
+				No commands are available right now.
 			</div>
 		{/if}
 	</section>

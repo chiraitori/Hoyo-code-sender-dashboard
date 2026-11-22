@@ -21,19 +21,19 @@
 
 	const SAMPLES: Record<GameId, { code: string; rewards: string; status: string }> = {
 		zzz: {
-			code: 'NEWERRIDU17',
-			rewards: '300 Polychrome, 30,000 Dennies, 2 Senior Investigator Log',
-			status: 'Livestream Drop'
+			code: 'ZENLESSGIFT',
+			rewards: '50 Polychrome, 2 Official Investigator Log, 3 W-Engine Power Supply',
+			status: 'Active'
 		},
 		genshin: {
-			code: 'NATLAN56LIVE',
-			rewards: '100 Primogems, 10 Mystic Enhancement Ore',
-			status: 'Special Program'
+			code: 'GENSHINGIFT',
+			rewards: "50 Primogems, 3 Hero's Wit",
+			status: 'Active'
 		},
 		hsr: {
-			code: 'AMPHOREUS32',
-			rewards: '100 Stellar Jade, 50,000 Credits',
-			status: 'Special Program'
+			code: 'STARRAILGIFT',
+			rewards: "50 Stellar Jade, 2 Traveler's Guide",
+			status: 'Active'
 		}
 	};
 
@@ -45,19 +45,19 @@
 			title: 'New Redemption Code',
 			rewards: 'Rewards',
 			redeem: 'Redeem on HoYoLAB',
-			footer: 'Dispatched by HoYo Code Sender'
+			footer: 'HoYo Code Sender'
 		},
 		jp: {
 			title: '新しい交換コード',
 			rewards: '報酬',
 			redeem: 'HoYoLABで交換する',
-			footer: 'HoYo Code Sender による自動配信'
+			footer: 'HoYo Code Sender'
 		},
 		vi: {
 			title: 'Mã Đổi Thưởng Mới',
 			rewards: 'Phần thưởng',
 			redeem: 'Đổi trên HoYoLAB',
-			footer: 'Tự động gửi bởi HoYo Code Sender'
+			footer: 'HoYo Code Sender'
 		}
 	};
 
@@ -86,7 +86,7 @@
 		const chId = config.livestreamChannel || config.channel;
 		if (!chId) return 'No channel selected';
 		const ch = guild.channels.find((c) => c.id === chId);
-		return ch ? `#${ch.name}` : `#channel`;
+		return ch ? `#${ch.name}` : '#channel';
 	});
 
 	const isGameEnabled = $derived.by(() => {
@@ -105,9 +105,7 @@
 
 <div class="space-y-3">
 	<div class="flex items-center justify-between gap-2">
-		<span class="font-mono-hdd text-xs font-black tracking-wide text-[#d8ff00]">
-			LIVE DISCORD MONITOR
-		</span>
+		<span class="text-xs font-black text-white">Message preview</span>
 		<div class="flex items-center gap-1.5">
 			{#each (['zzz', 'genshin', 'hsr'] as GameId[]) as g}
 				<button
@@ -128,11 +126,11 @@
 		<div class="flex items-center justify-between gap-2 pb-2 border-b border-[#2e3035]">
 			<span class="font-mono-hdd font-semibold text-[#b5bac1] truncate">{targetChannelLabel}</span>
 			<span
-				class="font-mono-hdd px-2 py-0.5 rounded-full font-bold whitespace-nowrap {willDeliver
+				class="px-2 py-0.5 rounded-full font-bold whitespace-nowrap {willDeliver
 					? 'bg-[#d8ff00]/15 text-[#d8ff00]'
 					: 'bg-[#ff5d1f]/20 text-[#ff8a5c]'}"
 			>
-				{willDeliver ? 'SIGNAL ACTIVE' : !hasDestination ? 'NO CHANNEL' : 'MUTED'}
+				{willDeliver ? 'Active' : !hasDestination ? 'Pick a channel' : 'Paused'}
 			</span>
 		</div>
 
@@ -159,7 +157,7 @@
 				{/if}
 
 				<div class="discord-embed p-3 space-y-1.5" style="border-left-color: {meta.color};">
-					<div class="text-[#b5bac1] font-semibold">{meta.label} // {copy.title}</div>
+					<div class="text-[#b5bac1] font-semibold">{meta.label}: {copy.title}</div>
 					<div class="font-mono-hdd text-sm font-black text-white tracking-wider">{sample.code}</div>
 					<div>
 						<div class="text-[#949ba4] font-semibold">{copy.rewards}</div>
@@ -167,7 +165,7 @@
 					</div>
 					<div class="flex items-center justify-between pt-1 text-[#949ba4]">
 						<span>{copy.footer}</span>
-						<span class="font-mono-hdd">{sample.status}</span>
+						<span>{sample.status}</span>
 					</div>
 				</div>
 

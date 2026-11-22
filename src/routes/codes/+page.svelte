@@ -54,17 +54,16 @@
 <div class="space-y-5">
 	<div class="flex flex-wrap items-end justify-between gap-3">
 		<div>
-			<div class="font-mono-hdd text-xs font-black text-[#d8ff00]">// INTER-KNOT COMMISSIONS</div>
-			<h1 class="text-2xl md:text-3xl font-black tracking-tight text-white mt-0.5">
-				REDEMPTION CODE BOARD
+			<h1 class="text-2xl md:text-3xl font-black tracking-tight text-white">
+				Redemption codes
 			</h1>
-		</div>
-		<div class="font-mono-hdd text-xs text-[#9a9aab]">
-			{activeCounts.all} ACTIVE CODES
+			<p class="text-xs text-[#9a9aab] mt-1">
+				{activeCounts.all} active codes across Genshin Impact, Honkai: Star Rail, and Zenless Zone Zero.
+			</p>
 		</div>
 	</div>
 
-	<!-- Filter Bar -->
+	<!-- Filters -->
 	<div class="zzz-card p-4 flex flex-wrap items-center justify-between gap-3">
 		<div class="flex flex-wrap items-center gap-2">
 			<button
@@ -73,7 +72,7 @@
 				class="zzz-pill px-3.5 py-1.5 text-xs {gameFilter === 'all' ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
 			>
 				<span class="inline-flex items-center gap-1.5">
-					<span>ALL</span>
+					<span>All</span>
 					<span class="font-mono-hdd opacity-75">{activeCounts.all}</span>
 				</span>
 			</button>
@@ -97,7 +96,7 @@
 				onclick={() => (livestreamOnly = !livestreamOnly)}
 				class="zzz-pill px-3.5 py-1.5 text-xs {livestreamOnly ? 'zzz-btn-orange' : 'zzz-btn-dark'}"
 			>
-				<span>LIVESTREAM ONLY</span>
+				<span>Livestream only</span>
 			</button>
 
 			<button
@@ -105,7 +104,7 @@
 				onclick={() => (showExpired = !showExpired)}
 				class="zzz-pill px-3.5 py-1.5 text-xs {showExpired ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
 			>
-				<span>{showExpired ? 'SHOWING EXPIRED' : 'ACTIVE ONLY'}</span>
+				<span>{showExpired ? 'Showing expired' : 'Hide expired'}</span>
 			</button>
 		</div>
 
@@ -113,13 +112,13 @@
 			<input
 				type="text"
 				bind:value={searchQuery}
-				placeholder="Search code or reward..."
+				placeholder="Search codes or rewards..."
 				class="zzz-input w-full px-3.5 py-2 text-xs font-semibold"
 			/>
 		</div>
 	</div>
 
-	<!-- Code Cards Grid -->
+	<!-- Code Cards -->
 	{#if filteredCodes.length > 0}
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			{#each filteredCodes as item (item.game + item.code)}
@@ -128,14 +127,14 @@
 				>
 					<div class="flex items-start justify-between gap-3">
 						<div class="min-w-0">
-							<div class="flex flex-wrap items-center gap-2 text-xs font-mono-hdd">
+							<div class="flex flex-wrap items-center gap-2 text-xs">
 								<span class="px-2 py-0.5 rounded-full bg-[#131318] border border-[#343440] text-white font-bold inline-flex items-center gap-1.5">
 									<span class="w-2 h-2 rounded-full {GAME_META[item.game].dotClass}"></span>
 									{GAME_META[item.game].label}
 								</span>
 								{#if item.isLivestream}
 									<span class="px-2 py-0.5 rounded-full bg-[#ff5d1f] text-[#08080a] font-black">
-										STREAM
+										Livestream
 									</span>
 								{/if}
 							</div>
@@ -145,46 +144,41 @@
 						</div>
 
 						<span
-							class="font-mono-hdd text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 {item.isExpired
+							class="text-xs font-bold px-2.5 py-1 rounded-full border shrink-0 {item.isExpired
 								? 'bg-[#2b1518] border-[#7f1d1d] text-[#ff8585]'
 								: 'bg-[#131318] border-[#343440] text-[#d8ff00]'}"
 						>
-							{item.isExpired ? 'EXPIRED' : 'ACTIVE'}
+							{item.isExpired ? 'Expired' : 'Active'}
 						</span>
 					</div>
 
 					<p class="text-xs text-[#a9a9b8] leading-relaxed">{item.rewards}</p>
 
-					<div class="flex items-center justify-between gap-2 pt-3 border-t-2 border-[#2a2a34]">
-						<span class="font-mono-hdd text-xs text-[#8e8e9e]">
-							{GAME_META[item.game].tape}
-						</span>
-						<div class="flex items-center gap-2">
-							<button
-								type="button"
-								onclick={() => copyCode(item.code)}
-								class="zzz-pill px-3.5 py-1.5 text-xs {copiedCode === item.code ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
-							>
-								<span>{copiedCode === item.code ? 'COPIED' : 'COPY'}</span>
-							</button>
-							<a
-								href={item.redeemUrl}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="zzz-pill zzz-btn-volt px-3.5 py-1.5 text-xs"
-							>
-								<span>REDEEM</span>
-							</a>
-						</div>
+					<div class="flex items-center justify-end gap-2 pt-3 border-t-2 border-[#2a2a34]">
+						<button
+							type="button"
+							onclick={() => copyCode(item.code)}
+							class="zzz-pill px-3.5 py-1.5 text-xs {copiedCode === item.code ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
+						>
+							<span>{copiedCode === item.code ? 'Copied' : 'Copy'}</span>
+						</button>
+						<a
+							href={item.redeemUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="zzz-pill zzz-btn-volt px-3.5 py-1.5 text-xs"
+						>
+							<span>Redeem</span>
+						</a>
 					</div>
 				</article>
 			{/each}
 		</div>
 	{:else}
 		<div class="zzz-card p-10 text-center space-y-2">
-			<div class="text-sm font-black text-white">NO MATCHING SIGNAL</div>
+			<div class="text-sm font-bold text-white">No codes match your filter</div>
 			<p class="text-xs text-[#9a9aab]">
-				Try clearing the search query, turning off Livestream Only, or switching games.
+				Try clearing the search box or showing expired codes.
 			</p>
 		</div>
 	{/if}

@@ -83,7 +83,7 @@
 			if (!res.ok || !body.guild || !body.config || !body.settings || !body.language) {
 				statusBanner = {
 					tone: 'err',
-					text: body.error || 'Failed to save configuration'
+					text: body.error || 'Could not save settings.'
 				};
 				return;
 			}
@@ -92,7 +92,7 @@
 			settings = body.settings;
 			language = body.language;
 			dirty = false;
-			statusBanner = { tone: 'ok', text: `Saved routing for ${guild.name}.` };
+			statusBanner = { tone: 'ok', text: `Saved settings for ${guild.name}.` };
 		} catch {
 			statusBanner = { tone: 'err', text: 'Could not save changes. Please try again.' };
 		} finally {
@@ -107,12 +107,12 @@
 			const res = await fetch(`/api/server/${guild.id}/test`, { method: 'POST' });
 			const body = (await res.json()) as { message?: string; error?: string };
 			if (!res.ok) {
-				statusBanner = { tone: 'err', text: body.error || 'Could not send test notification' };
+				statusBanner = { tone: 'err', text: body.error || 'Could not send test message.' };
 			} else {
-				statusBanner = { tone: 'ok', text: body.message || 'Test notification sent!' };
+				statusBanner = { tone: 'ok', text: body.message || 'Test message sent.' };
 			}
 		} catch {
-			statusBanner = { tone: 'err', text: 'Network error while sending test alert.' };
+			statusBanner = { tone: 'err', text: 'Could not send test message. Please try again.' };
 		} finally {
 			testing = false;
 		}
@@ -125,7 +125,7 @@
 			const res = await fetch(`/api/server/${guild.id}/reset`, { method: 'POST' });
 			const body = (await res.json()) as { message?: string; error?: string };
 			if (!res.ok) {
-				statusBanner = { tone: 'err', text: body.error || 'Failed to reset server config' };
+				statusBanner = { tone: 'err', text: body.error || 'Could not reset settings.' };
 				return;
 			}
 			config = {
@@ -147,9 +147,9 @@
 			language = 'en';
 			dirty = false;
 			confirmReset = false;
-			statusBanner = { tone: 'ok', text: body.message || 'Server configuration reset.' };
+			statusBanner = { tone: 'ok', text: body.message || 'Server settings reset.' };
 		} catch {
-			statusBanner = { tone: 'err', text: 'Network error while resetting configuration.' };
+			statusBanner = { tone: 'err', text: 'Could not reset settings. Please try again.' };
 		} finally {
 			resetting = false;
 		}
@@ -157,19 +157,17 @@
 </script>
 
 <div class="space-y-5">
-	<!-- Top Server Breadcrumb Header -->
 	<div class="flex flex-wrap items-center justify-between gap-3">
 		<div class="flex items-center gap-3 min-w-0">
-			<a href="/servers" class="zzz-pill zzz-btn-dark px-3 py-1.5 text-xs">
-				<span>BACK</span>
+			<a href="/servers" class="zzz-pill zzz-btn-dark px-3.5 py-1.5 text-xs">
+				<span>Back</span>
 			</a>
 			<div class="min-w-0">
-				<div class="font-mono-hdd text-xs font-black text-[#d8ff00]">// HDD SERVER ROUTING</div>
 				<h1 class="text-xl md:text-2xl font-black text-white truncate">{guild.name}</h1>
+				<p class="text-xs text-[#9a9aab]">
+					{guild.memberCount.toLocaleString()} members · {guild.channels.length} channels
+				</p>
 			</div>
-		</div>
-		<div class="font-mono-hdd text-xs text-[#9a9aab]">
-			{guild.memberCount.toLocaleString()} MEMBERS · {guild.channels.length} CHANNELS · {guild.threads.length} THREADS
 		</div>
 	</div>
 
@@ -183,17 +181,14 @@
 		</div>
 	{/if}
 
-	<!-- Main 2-Column Split: Routing Controls (7) + Sticky Live Discord Monitor (5) -->
 	<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-		<!-- Left: Configuration Controls -->
 		<div class="lg:col-span-7 space-y-5">
-			<!-- Delivery Channels & Roles -->
 			<section class="zzz-card p-5 space-y-4">
 				<div class="flex items-center justify-between gap-4 pb-3.5 border-b-2 border-[#2a2a34]">
 					<div>
-						<h2 class="text-sm font-black text-white">AUTOMATIC CODE DELIVERY</h2>
+						<h2 class="text-sm font-black text-white">Auto-send codes</h2>
 						<p class="text-xs text-[#9a9aab] mt-0.5">
-							Master switch for posting new HoYoLAB and Special Program codes.
+							Post new codes automatically when they are released.
 						</p>
 					</div>
 					<button
@@ -214,7 +209,7 @@
 				<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 					<div class="space-y-1.5">
 						<label for="cfg-channel" class="block text-xs font-bold text-[#d4d4dc]">
-							Regular Code Channel
+							Main channel
 						</label>
 						<select
 							id="cfg-channel"
@@ -222,7 +217,7 @@
 							onchange={(e) => setSelect('channel', e.currentTarget.value)}
 							class="zzz-input w-full px-3 py-2 text-xs font-semibold cursor-pointer"
 						>
-							<option value="">Not configured</option>
+							<option value="">Not set</option>
 							{#each guild.channels as ch (ch.id)}
 								<option value={ch.id}>#{ch.name}</option>
 							{/each}
@@ -231,7 +226,7 @@
 
 					<div class="space-y-1.5">
 						<label for="cfg-live-channel" class="block text-xs font-bold text-[#d4d4dc]">
-							Separate Livestream Channel
+							Livestream channel
 						</label>
 						<select
 							id="cfg-live-channel"
@@ -239,7 +234,7 @@
 							onchange={(e) => setSelect('livestreamChannel', e.currentTarget.value)}
 							class="zzz-input w-full px-3 py-2 text-xs font-semibold cursor-pointer"
 						>
-							<option value="">Same as regular channel</option>
+							<option value="">Same as main channel</option>
 							{#each guild.channels as ch (ch.id)}
 								<option value={ch.id}>#{ch.name}</option>
 							{/each}
@@ -248,7 +243,7 @@
 
 					<div class="space-y-1.5">
 						<label for="cfg-lang" class="block text-xs font-bold text-[#d4d4dc]">
-							Embed &amp; Reward Language
+							Language
 						</label>
 						<select
 							id="cfg-lang"
@@ -259,15 +254,15 @@
 							}}
 							class="zzz-input w-full px-3 py-2 text-xs font-semibold cursor-pointer"
 						>
-							<option value="en">English (en)</option>
-							<option value="jp">日本語 (jp)</option>
-							<option value="vi">Tiếng Việt (vi)</option>
+							<option value="en">English</option>
+							<option value="jp">日本語</option>
+							<option value="vi">Tiếng Việt</option>
 						</select>
 					</div>
 
 					<div class="space-y-1.5">
 						<label for="cfg-zzz-role" class="block text-xs font-bold text-[#d4d4dc]">
-							Zenless Zone Zero Role
+							Zenless Zone Zero ping role
 						</label>
 						<select
 							id="cfg-zzz-role"
@@ -275,7 +270,7 @@
 							onchange={(e) => setSelect('zzzRole', e.currentTarget.value)}
 							class="zzz-input w-full px-3 py-2 text-xs font-semibold cursor-pointer"
 						>
-							<option value="">No mention</option>
+							<option value="">None</option>
 							{#each guild.roles as role (role.id)}
 								<option value={role.id}>@{role.name}</option>
 							{/each}
@@ -284,7 +279,7 @@
 
 					<div class="space-y-1.5">
 						<label for="cfg-gi-role" class="block text-xs font-bold text-[#d4d4dc]">
-							Genshin Impact Role
+							Genshin Impact ping role
 						</label>
 						<select
 							id="cfg-gi-role"
@@ -292,7 +287,7 @@
 							onchange={(e) => setSelect('genshinRole', e.currentTarget.value)}
 							class="zzz-input w-full px-3 py-2 text-xs font-semibold cursor-pointer"
 						>
-							<option value="">No mention</option>
+							<option value="">None</option>
 							{#each guild.roles as role (role.id)}
 								<option value={role.id}>@{role.name}</option>
 							{/each}
@@ -301,7 +296,7 @@
 
 					<div class="space-y-1.5">
 						<label for="cfg-hsr-role" class="block text-xs font-bold text-[#d4d4dc]">
-							Honkai: Star Rail Role
+							Honkai: Star Rail ping role
 						</label>
 						<select
 							id="cfg-hsr-role"
@@ -309,7 +304,7 @@
 							onchange={(e) => setSelect('hsrRole', e.currentTarget.value)}
 							class="zzz-input w-full px-3 py-2 text-xs font-semibold cursor-pointer"
 						>
-							<option value="">No mention</option>
+							<option value="">None</option>
 							{#each guild.roles as role (role.id)}
 								<option value={role.id}>@{role.name}</option>
 							{/each}
@@ -318,13 +313,12 @@
 				</div>
 			</section>
 
-			<!-- Favorite Games & Delivery Options -->
 			<section class="zzz-card p-5 space-y-4">
 				<div class="flex items-center justify-between gap-4 pb-3.5 border-b-2 border-[#2a2a34]">
 					<div>
-						<h2 class="text-sm font-black text-white">FAVORITE GAMES &amp; LIVESTREAM ALERTS</h2>
+						<h2 class="text-sm font-black text-white">Filter by game</h2>
 						<p class="text-xs text-[#9a9aab] mt-0.5">
-							When off, your server receives codes for all three HoYoverse games.
+							When off, your server receives codes for all three games.
 						</p>
 					</div>
 					<button
@@ -364,7 +358,7 @@
 								{item.label}
 							</span>
 							<span class="font-mono-hdd {active ? 'text-[#d8ff00]' : 'text-[#6c6c7c]'}">
-								{active ? 'ON' : 'OFF'}
+								{active ? 'On' : 'Off'}
 							</span>
 						</button>
 					{/each}
@@ -372,7 +366,7 @@
 
 				<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t-2 border-[#2a2a34]">
 					<label class="zzz-subcard px-3 py-2.5 flex items-center justify-between gap-2 text-xs font-bold cursor-pointer">
-						<span>Main Channel</span>
+						<span>Post to channel</span>
 						<input
 							type="checkbox"
 							checked={settings.autoSendOptions.channel}
@@ -384,7 +378,7 @@
 						/>
 					</label>
 					<label class="zzz-subcard px-3 py-2.5 flex items-center justify-between gap-2 text-xs font-bold cursor-pointer">
-						<span>Forum Threads</span>
+						<span>Post to threads</span>
 						<input
 							type="checkbox"
 							checked={settings.autoSendOptions.threads}
@@ -396,7 +390,7 @@
 						/>
 					</label>
 					<label class="zzz-subcard px-3 py-2.5 flex items-center justify-between gap-2 text-xs font-bold cursor-pointer">
-						<span>Stream Notices</span>
+						<span>Stream notices</span>
 						<input
 							type="checkbox"
 							checked={settings.livestreamAnnouncementsEnabled}
@@ -412,9 +406,9 @@
 				{#if guild.threads.length > 0}
 					<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t-2 border-[#2a2a34]">
 						{#each [
-							{ game: 'zzz' as GameId, label: 'ZZZ Forum Thread' },
-							{ game: 'genshin' as GameId, label: 'Genshin Forum Thread' },
-							{ game: 'hsr' as GameId, label: 'Star Rail Forum Thread' }
+							{ game: 'zzz' as GameId, label: 'ZZZ thread' },
+							{ game: 'genshin' as GameId, label: 'Genshin thread' },
+							{ game: 'hsr' as GameId, label: 'Star Rail thread' }
 						] as th}
 							<div class="space-y-1.5">
 								<label for={`thread-${th.game}`} class="block text-xs font-bold text-[#d4d4dc]">
@@ -426,7 +420,7 @@
 									onchange={(e) => setThread(th.game, e.currentTarget.value)}
 									class="zzz-input w-full px-3 py-2 text-xs font-semibold cursor-pointer"
 								>
-									<option value="">None (use main channel)</option>
+									<option value="">Use main channel</option>
 									{#each guild.threads as thread (thread.id)}
 										<option value={thread.id}>
 											#{thread.name}{thread.parentName ? ` (${thread.parentName})` : ''}
@@ -439,12 +433,11 @@
 				{/if}
 			</section>
 
-			<!-- Danger Zone: Reset Config -->
 			<section class="zzz-subcard p-4 flex flex-wrap items-center justify-between gap-3">
 				<div>
-					<div class="text-xs font-black text-[#ff8585]">RESET SERVER CONFIGURATION</div>
+					<div class="text-xs font-black text-[#ff8585]">Reset settings</div>
 					<p class="text-xs text-[#9a9aab] mt-0.5">
-						Clears channels, roles, forum threads, language, and settings for {guild.name}.
+						Clear all saved channels, roles, threads, and language preferences for {guild.name}.
 					</p>
 				</div>
 				{#if confirmReset}
@@ -454,7 +447,7 @@
 							onclick={() => (confirmReset = false)}
 							class="zzz-pill zzz-btn-dark px-3.5 py-1.5 text-xs"
 						>
-							<span>CANCEL</span>
+							<span>Cancel</span>
 						</button>
 						<button
 							type="button"
@@ -462,7 +455,7 @@
 							onclick={resetServer}
 							class="zzz-pill zzz-btn-danger px-4 py-1.5 text-xs"
 						>
-							<span>{resetting ? 'RESETTING...' : 'CONFIRM RESET'}</span>
+							<span>{resetting ? 'Resetting...' : 'Confirm reset'}</span>
 						</button>
 					</div>
 				{:else}
@@ -471,13 +464,12 @@
 						onclick={() => (confirmReset = true)}
 						class="zzz-pill zzz-btn-danger px-4 py-1.5 text-xs"
 					>
-						<span>RESET CONFIG</span>
+						<span>Reset</span>
 					</button>
 				{/if}
 			</section>
 		</div>
 
-		<!-- Right: Sticky Live Discord Output & Actions -->
 		<aside class="lg:col-span-5 lg:sticky lg:top-24">
 			<div class="zzz-card p-5 space-y-4">
 				<DiscordPreview
@@ -496,7 +488,7 @@
 						onclick={sendTest}
 						class="zzz-pill zzz-btn-dark px-4 py-2 text-xs"
 					>
-						<span>{testing ? 'SENDING...' : 'SEND TEST'}</span>
+						<span>{testing ? 'Sending...' : 'Send test'}</span>
 					</button>
 
 					<button
@@ -505,7 +497,7 @@
 						onclick={saveAll}
 						class="zzz-pill px-5 py-2 text-xs {dirty ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
 					>
-						<span>{saving ? 'SAVING...' : dirty ? 'SAVE CHANGES' : 'SYNCED'}</span>
+						<span>{saving ? 'Saving...' : dirty ? 'Save changes' : 'Saved'}</span>
 					</button>
 				</div>
 			</div>

@@ -24,16 +24,18 @@
 <div class="space-y-6">
 	<div class="flex flex-wrap items-end justify-between gap-3">
 		<div>
-			<div class="font-mono-hdd text-xs font-black text-[#d8ff00]">// HDD SERVER ROUTING</div>
-			<h1 class="text-2xl md:text-3xl font-black tracking-tight text-white mt-0.5">
-				SELECT A DISCORD SERVER
+			<h1 class="text-2xl md:text-3xl font-black tracking-tight text-white">
+				Your servers
 			</h1>
+			<p class="text-xs text-[#9a9aab] mt-1">
+				Choose a Discord server to configure notification channels, roles, and game filters.
+			</p>
 		</div>
 		{#if data.authenticated && data.guilds.length > 0}
 			<input
 				type="text"
 				bind:value={search}
-				placeholder="Filter servers..."
+				placeholder="Search servers..."
 				class="zzz-input px-3.5 py-2 text-xs font-semibold w-full sm:w-64"
 			/>
 		{/if}
@@ -41,35 +43,29 @@
 
 	{#if !data.authenticated}
 		<div class="zzz-card p-8 md:p-10 text-center max-w-xl mx-auto space-y-4">
-			<div class="inline-block px-3 py-1 rounded-full bg-[#131318] border border-[#343440] font-mono-hdd text-xs font-black text-[#d8ff00]">
-				AUTHENTICATION REQUIRED
-			</div>
-			<h2 class="text-2xl font-black text-white">Sign in with Discord</h2>
+			<h2 class="text-2xl font-black text-white">Log in with Discord</h2>
 			<p class="text-xs text-[#a9a9b8] leading-relaxed">
-				Permissions are verified live with Discord OAuth. Only server owners, administrators, and channel managers can modify routing for a guild.
+				We check your Discord permissions so only server owners, administrators, and channel managers can edit settings.
 			</p>
 			<div class="pt-2">
-				<a href="/auth/login" class="zzz-pill zzz-btn-volt px-6 py-2.5 text-xs tracking-wide">
-					<span>CONNECT DISCORD ACCOUNT</span>
+				<a href="/auth/login" class="zzz-pill zzz-btn-volt px-6 py-2.5 text-xs">
+					<span>Log in with Discord</span>
 				</a>
 			</div>
 		</div>
 	{:else if data.errorMessage}
 		<div class="zzz-card p-6 border-[#7f1d1d] space-y-3">
-			<div class="text-sm font-black text-[#ff8585]">CONNECTION WARNING</div>
+			<div class="text-sm font-black text-[#ff8585]">Could not load servers</div>
 			<p class="text-xs text-[#d4d4dc]">{data.errorMessage}</p>
 			<a href="/auth/login" class="zzz-pill zzz-btn-volt px-4 py-2 text-xs">
-				<span>RE-AUTHENTICATE</span>
+				<span>Log in again</span>
 			</a>
 		</div>
 	{:else}
-		<!-- Linked Servers (Bot is already in guild) -->
 		<section class="space-y-3">
-			<div class="flex items-center justify-between">
-				<h2 class="font-mono-hdd text-xs font-black text-[#d8ff00]">
-					BOT CONNECTED ({linkedGuilds.length})
-				</h2>
-			</div>
+			<h2 class="text-xs font-black text-[#d8ff00]">
+				Ready to configure ({linkedGuilds.length})
+			</h2>
 
 			{#if linkedGuilds.length > 0}
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -91,33 +87,32 @@
 								{/if}
 								<div class="min-w-0">
 									<div class="text-sm font-black text-white truncate">{guild.name}</div>
-									<div class="font-mono-hdd text-[11px] text-[#9a9aab] mt-0.5">
-										{guild.owner ? 'OWNER' : 'MANAGER'} · READY
+									<div class="text-xs text-[#9a9aab] mt-0.5">
+										{guild.owner ? 'Owner' : 'Manager'}
 									</div>
 								</div>
 							</div>
 
 							<a
 								href={`/servers/${guild.id}`}
-								class="zzz-pill zzz-btn-volt px-3.5 py-1.5 text-xs shrink-0"
+								class="zzz-pill zzz-btn-volt px-4 py-1.5 text-xs shrink-0"
 							>
-								<span>ROUTE</span>
+								<span>Manage</span>
 							</a>
 						</div>
 					{/each}
 				</div>
 			{:else}
 				<div class="zzz-card p-6 text-xs text-[#9a9aab]">
-					None of your manageable servers currently have the bot connected. Invite it to a server below.
+					The bot is not in any of your manageable servers yet. Add it to a server below to get started.
 				</div>
 			{/if}
 		</section>
 
-		<!-- Unlinked Servers (Invite Bot) -->
 		{#if unlinkedGuilds.length > 0}
 			<section class="space-y-3 pt-2">
-				<h2 class="font-mono-hdd text-xs font-black text-[#9a9aab]">
-					ADD BOT TO SERVER ({unlinkedGuilds.length})
+				<h2 class="text-xs font-black text-[#9a9aab]">
+					Add bot to a server ({unlinkedGuilds.length})
 				</h2>
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each unlinkedGuilds as guild (guild.id)}
@@ -138,7 +133,7 @@
 								{/if}
 								<div class="min-w-0">
 									<div class="text-xs font-bold text-[#d4d4dc] truncate">{guild.name}</div>
-									<div class="font-mono-hdd text-[11px] text-[#7a7a8c]">NOT LINKED</div>
+									<div class="text-xs text-[#7a7a8c]">Bot not added</div>
 								</div>
 							</div>
 
@@ -149,7 +144,7 @@
 									rel="noopener noreferrer"
 									class="zzz-pill zzz-btn-dark px-3.5 py-1.5 text-xs shrink-0"
 								>
-									<span>INVITE</span>
+									<span>Invite</span>
 								</a>
 							{/if}
 						</div>
