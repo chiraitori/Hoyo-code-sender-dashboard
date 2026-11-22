@@ -32,5 +32,5 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
 		state
 	}).toString();
 
-	throw redirect(302, authorizeUrl.toString());
+	throw redirect(302, authorizeUrl.toString(), { external: ['https://discord.com'] });
 };
