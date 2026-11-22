@@ -6,8 +6,20 @@
 	let copiedCode = $state<string | null>(null);
 
 	const featuredDrops = $derived.by(() => {
-		const live = data.activeCodes.filter((c) => c.isLivestream);
-		return (live.length > 0 ? live : data.activeCodes).slice(0, 4);
+		const pool = data.activeCodes;
+		const picked: typeof pool = [];
+		// Pick a balanced mix across ZZZ, Genshin, and Star Rail first
+		for (const game of ['zzz', 'genshin', 'hsr'] as GameId[]) {
+			const match = pool.find((c) => c.game === game && c.isLivestream) ?? pool.find((c) => c.game === game);
+			if (match) picked.push(match);
+		}
+		for (const item of pool) {
+			if (picked.length >= 4) break;
+			if (!picked.some((p) => p.game === item.game && p.code === item.code)) {
+				picked.push(item);
+			}
+		}
+		return picked.slice(0, 4);
 	});
 
 	const countByGame = $derived({
@@ -115,7 +127,7 @@
 					</span>
 				</div>
 				<span class="text-xs font-mono-hdd text-[#9a9aab]">
-					SOURCE // {data.codesSource === 'bot' ? 'VPS + HOYOLAB' : 'FALLBACK API'}
+					AUTO-SYNCED // VERIFIED
 				</span>
 			</div>
 
@@ -194,9 +206,9 @@
 			<div class="text-xs text-[#8f8fa0] mt-0.5">Discord WebSocket latency</div>
 		</div>
 		<div class="zzz-card p-4">
-			<div class="font-mono-hdd text-xs text-[#9a9aab]">BRIDGE SECURITY</div>
-			<div class="font-mono-hdd text-2xl font-black text-[#d8ff00] mt-1">HMAC v1</div>
-			<div class="text-xs text-[#8f8fa0] mt-0.5">Signed Vercel ↔ VPS link</div>
+			<div class="font-mono-hdd text-xs text-[#9a9aab]">ACTIVE CODES</div>
+			<div class="font-mono-hdd text-2xl font-black text-[#d8ff00] mt-1">{data.activeCodes.length}</div>
+			<div class="text-xs text-[#8f8fa0] mt-0.5">Ready across GI, HSR &amp; ZZZ</div>
 		</div>
 	</section>
 
@@ -206,7 +218,7 @@
 			<span class="font-mono-hdd text-xs font-black text-[#d8ff00]">// ANTI-SPAM LEDGER</span>
 			<h2 class="text-base font-black">Zero duplicate replays</h2>
 			<p class="text-xs text-[#a9a9b8] leading-relaxed">
-				Delivery markers isolate every bot, guild, channel, and forum thread so restarts and redeploys never spam old codes.
+				Delivery tracking isolates every guild, channel, and forum thread so your server never gets spammed with repeated codes.
 			</p>
 		</div>
 		<div class="md:col-span-5 zzz-card-bevel p-5 space-y-2">
@@ -217,11 +229,11 @@
 			</p>
 		</div>
 		<div class="md:col-span-3 rounded-[18px] p-5 bg-[#d8ff00] text-[#08080a] border-2 border-[#08080a] shadow-[0_6px_0_#060608] flex flex-col justify-between gap-2">
-			<span class="font-mono-hdd text-xs font-black">SINGLE ROUND TRIP</span>
+			<span class="font-mono-hdd text-xs font-black">LOCALIZED REWARDS</span>
 			<div>
-				<h2 class="text-base font-black leading-tight">Snapshot API</h2>
+				<h2 class="text-base font-black leading-tight">Multi-language embeds</h2>
 				<p class="text-xs font-bold opacity-85 mt-1">
-					Loads and saves channels, threads, roles, settings, and language in one HMAC-signed call.
+					Automatic reward and notification translations in English, Japanese, and Vietnamese.
 				</p>
 			</div>
 		</div>

@@ -92,9 +92,9 @@
 			settings = body.settings;
 			language = body.language;
 			dirty = false;
-			statusBanner = { tone: 'ok', text: `Saved routing for ${guild.name} via signed snapshot.` };
+			statusBanner = { tone: 'ok', text: `Saved routing for ${guild.name}.` };
 		} catch {
-			statusBanner = { tone: 'err', text: 'Network error while saving to bot.' };
+			statusBanner = { tone: 'err', text: 'Could not save changes. Please try again.' };
 		} finally {
 			saving = false;
 		}

@@ -1,13 +1,8 @@
 <script lang="ts">
-	import type { BotPingInfo } from '#lib/types.ts';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
-	let overridePing = $state<BotPingInfo | null>(null);
-	let pinging = $state(false);
 	let cmdQuery = $state('');
-
-	const livePing = $derived(overridePing ?? data.ping);
 
 	const filteredCommands = $derived.by(() => {
 		const q = cmdQuery.trim().toLowerCase();
@@ -16,6 +11,8 @@
 			(c) => c.name.toLowerCase().includes(q) || c.description.toLowerCase().includes(q)
 		);
 	});
+
+	const isOnline = $derived(Boolean(data.stats && data.stats.status === 0));
 
 	function formatUptime(sec: number): string {
 		if (!Number.isFinite(sec) || sec <= 0) return '—';
@@ -26,57 +23,37 @@
 		if (h > 0) return `${h}h ${m}m`;
 		return `${m}m`;
 	}
-
-	async function repingVps() {
-		pinging = true;
-		try {
-			const res = await fetch('/api/bot/ping');
-			if (res.ok) {
-				overridePing = (await res.json()) as BotPingInfo;
-			}
-		} finally {
-			pinging = false;
-		}
-	}
 </script>
 
 <div class="space-y-6">
 	<div class="flex flex-wrap items-end justify-between gap-3">
 		<div>
-			<div class="font-mono-hdd text-xs font-black text-[#d8ff00]">// HDD SYSTEM TELEMETRY</div>
+			<div class="font-mono-hdd text-xs font-black text-[#d8ff00]">// BOT STATUS &amp; COMMANDS</div>
 			<h1 class="text-2xl md:text-3xl font-black tracking-tight text-white mt-0.5">
 				SHARD DECK &amp; SLASH COMMANDS
 			</h1>
 		</div>
-		<button
-			type="button"
-			disabled={pinging}
-			onclick={repingVps}
-			class="zzz-pill zzz-btn-volt px-4 py-2 text-xs"
-		>
-			<span>{pinging ? 'PINGING VPS...' : 'PING VPS BRIDGE'}</span>
-		</button>
 	</div>
 
-	<!-- Bridge & Shard Telemetry Cards -->
+	<!-- Public Bot Telemetry Cards -->
 	<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 		<div class="zzz-card p-4">
-			<div class="font-mono-hdd text-xs text-[#9a9aab]">VERCEL ↔ VPS LINK</div>
-			<div class="font-mono-hdd text-2xl font-black mt-1 {livePing?.ok ? 'text-[#d8ff00]' : 'text-[#ff5d1f]'}">
-				{livePing?.ok ? `${livePing.latencyMs} ms` : 'OFFLINE'}
+			<div class="font-mono-hdd text-xs text-[#9a9aab]">BOT STATUS</div>
+			<div class="font-mono-hdd text-2xl font-black mt-1 {isOnline ? 'text-[#d8ff00]' : 'text-[#ff5d1f]'}">
+				{isOnline ? 'ONLINE' : 'OFFLINE'}
 			</div>
 			<div class="font-mono-hdd text-xs text-[#8f8fa0] mt-1">
-				AUTH // {livePing?.authMode ? livePing.authMode.toUpperCase() : 'UNAVAILABLE'}
+				{data.stats ? `${data.stats.guildCount.toLocaleString()} ACTIVE GUILDS` : 'STATUS UNAVAILABLE'}
 			</div>
 		</div>
 
 		<div class="zzz-card p-4">
 			<div class="font-mono-hdd text-xs text-[#9a9aab]">DISCORD SHARDS</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
-				{data.stats ? data.stats.shardCount : livePing?.shardCount ?? '—'}
+				{data.stats ? data.stats.shardCount : '—'}
 			</div>
 			<div class="font-mono-hdd text-xs text-[#8f8fa0] mt-1">
-				{livePing?.botReady ? 'ALL SHARDS READY' : 'CHECK BOT STATUS'}
+				{isOnline ? 'ALL SHARDS READY' : 'WAITING FOR SIGNAL'}
 			</div>
 		</div>
 
@@ -96,7 +73,7 @@
 				{data.stats && data.stats.ping >= 0 ? `${data.stats.ping} ms` : '—'}
 			</div>
 			<div class="font-mono-hdd text-xs text-[#8f8fa0] mt-1">
-				{data.stats ? `${data.stats.guildCount.toLocaleString()} GUILDS` : 'STATS UNAVAILABLE'}
+				{data.stats ? `${data.stats.userCount.toLocaleString()} REACHED USERS` : 'LATENCY UNAVAILABLE'}
 			</div>
 		</div>
 	</div>
@@ -136,7 +113,7 @@
 			</div>
 		{:else}
 			<div class="p-8 text-center text-xs text-[#9a9aab]">
-				No slash commands returned by the bot right now.
+				Slash commands will appear here once the bot is connected.
 			</div>
 		{/if}
 	</section>

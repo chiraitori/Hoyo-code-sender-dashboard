@@ -30,6 +30,6 @@ export const load: PageServerLoad = async ({ request, url, cookies, params, loca
 		};
 	} catch (err) {
 		if (err && typeof err === 'object' && 'status' in err) throw err;
-		throw error(503, 'Bot API on VPS is temporarily unreachable');
+		throw error(503, 'Unable to reach the bot right now. Please try again shortly.');
 	}
 };

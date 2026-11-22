@@ -138,7 +138,7 @@
 	<!-- Inter-Knot Footer -->
 	<footer class="border-t-2 border-[#08080a] bg-[#111115] mt-10">
 		<div class="max-w-7xl mx-auto px-4 md:px-6 py-5 flex flex-wrap items-center justify-between gap-3 text-xs font-mono-hdd text-[#8f8fa0]">
-			<div>HOYO CODE SENDER // INTER-KNOT SVELTEKIT ENGINE</div>
+			<div>HOYO CODE SENDER // NOT AFFILIATED WITH HOYOVERSE</div>
 			<div class="flex flex-wrap items-center gap-4">
 				<a href="/codes" class="hover:text-[#d8ff00] transition-colors">CODES</a>
 				<a href="/system" class="hover:text-[#d8ff00] transition-colors">SYSTEM</a>

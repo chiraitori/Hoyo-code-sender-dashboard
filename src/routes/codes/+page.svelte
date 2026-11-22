@@ -60,7 +60,7 @@
 			</h1>
 		</div>
 		<div class="font-mono-hdd text-xs text-[#9a9aab]">
-			SOURCE // {data.source === 'bot' ? 'VPS BOT + HOYOLAB' : 'PUBLIC FALLBACK'}
+			{activeCounts.all} ACTIVE CODES
 		</div>
 	</div>
 
