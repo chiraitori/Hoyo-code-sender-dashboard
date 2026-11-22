@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CountUp from '#lib/components/CountUp.svelte';
 	import { GAME_META, type GameId, type LivestreamStatus } from '#lib/types.ts';
 	import type { PageData } from './$types';
 
@@ -163,8 +164,9 @@
 		<div class="lg:col-span-6 zzz-card overflow-hidden flex flex-col">
 			<div class="px-5 py-3.5 bg-[#131318] border-b-2 border-[#08080a] flex items-center justify-between gap-2">
 				<div class="flex items-center gap-2">
-					<span class="px-2 py-0.5 rounded bg-[#ff5d1f] text-[#08080a] text-xs font-black">
-						Live
+					<span class="px-2 py-0.5 rounded bg-[#ff5d1f] text-[#08080a] text-xs font-black inline-flex items-center gap-1.5">
+						<span class="w-1.5 h-1.5 rounded-full bg-[#08080a] zzz-live-dot"></span>
+						<span>Live</span>
 					</span>
 					<span class="text-xs font-black text-white">Latest active codes</span>
 				</div>
@@ -226,37 +228,57 @@
 
 	<!-- Key Numbers -->
 	<section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift zzz-enter zzz-stagger-1 p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Servers</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
-				{data.stats ? data.stats.guildCount.toLocaleString() : '—'}
+				{#if data.stats}
+					<CountUp value={data.stats.guildCount} />
+				{:else}
+					—
+				{/if}
 			</div>
 		</div>
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift zzz-enter zzz-stagger-2 p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Members</div>
 			<div class="font-mono-hdd text-2xl font-black text-[#d8ff00] mt-1">
-				{data.stats ? data.stats.userCount.toLocaleString() : '—'}
+				{#if data.stats}
+					<CountUp value={data.stats.userCount} />
+				{:else}
+					—
+				{/if}
 			</div>
 		</div>
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift zzz-enter zzz-stagger-3 p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Channels</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
-				{data.stats ? data.stats.channelCount.toLocaleString() : '—'}
+				{#if data.stats}
+					<CountUp value={data.stats.channelCount} />
+				{:else}
+					—
+				{/if}
 			</div>
 		</div>
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift zzz-enter zzz-stagger-4 p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Shards</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
-				{data.stats ? data.stats.shardCount : '—'}
+				{#if data.stats}
+					<CountUp value={data.stats.shardCount} duration={400} />
+				{:else}
+					—
+				{/if}
 			</div>
 		</div>
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift zzz-enter zzz-stagger-5 p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Gateway ping</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
-				{data.stats && data.stats.ping >= 0 ? `${data.stats.ping} ms` : '—'}
+				{#if data.stats && data.stats.ping >= 0}
+					<CountUp value={data.stats.ping} duration={450} suffix=" ms" />
+				{:else}
+					—
+				{/if}
 			</div>
 		</div>
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift zzz-enter zzz-stagger-6 p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Uptime</div>
 			<div class="font-mono-hdd text-2xl font-black text-[#d8ff00] mt-1">
 				{data.stats ? formatUptime(data.stats.uptime) : '—'}
@@ -275,7 +297,7 @@
 
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 			{#each gameCards as card (card.game)}
-				<div class="zzz-card p-5 flex flex-col justify-between gap-4">
+				<div class="zzz-card zzz-lift p-5 flex flex-col justify-between gap-4">
 					<div class="space-y-3">
 						<div class="flex items-start justify-between gap-2">
 							<div class="flex items-center gap-2.5">

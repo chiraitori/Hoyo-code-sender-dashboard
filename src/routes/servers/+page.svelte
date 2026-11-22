@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { flip } from 'svelte/animate';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -150,7 +151,7 @@
 				{#if linkedGuilds.length > 0}
 					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 						{#each linkedGuilds as guild (guild.id)}
-							<div class="zzz-card-bevel p-4 flex items-center justify-between gap-3">
+							<div animate:flip={{ duration: 200 }} class="zzz-card-bevel p-4 flex items-center justify-between gap-3">
 								<div class="flex items-center gap-3 min-w-0">
 									{#if guild.icon}
 										<img
@@ -200,7 +201,7 @@
 				</h2>
 				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 					{#each unlinkedGuilds as guild (guild.id)}
-						<div class="zzz-subcard p-4 flex items-center justify-between gap-3">
+						<div class="zzz-subcard zzz-lift p-4 flex items-center justify-between gap-3">
 							<div class="flex items-center gap-3 min-w-0">
 								{#if guild.icon}
 									<img

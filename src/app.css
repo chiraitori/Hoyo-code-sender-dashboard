@@ -21,7 +21,7 @@
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 	background-image:
 		radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px),
-		linear-gradient(180deg, rgba(216, 255, 0, 0.035) 0%, transparent 280px);
+		linear-gradient(180deg, rgba(216, 255, 0, 0.04) 0%, transparent 300px);
 	background-size: 16px 16px, 100% 100%;
 	min-height: 100dvh;
 }
@@ -31,9 +31,59 @@
 	font-variant-numeric: tabular-nums;
 }
 
+@keyframes zzz-drift {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: 32px 32px;
+	}
+}
+
+@keyframes zzz-tape-scroll {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: 34.84px 0;
+	}
+}
+
+@keyframes zzz-tape-scroll-sm {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: 24.39px 0;
+	}
+}
+
+@keyframes zzz-snap-in {
+	from {
+		opacity: 0;
+		transform: translateY(10px) scale(0.985);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes zzz-sonar {
+	0% {
+		transform: scale(1);
+		opacity: 0.8;
+	}
+	75%, 100% {
+		transform: scale(2.4);
+		opacity: 0;
+	}
+}
+
 .zzz-halftone {
-	background-image: radial-gradient(rgba(216, 255, 0, 0.17) 1.2px, transparent 1.2px);
+	background-image: radial-gradient(rgba(216, 255, 0, 0.19) 1.25px, transparent 1.25px);
 	background-size: 8px 8px;
+	animation: zzz-drift 10s linear infinite;
 }
 
 .zzz-hazard {
@@ -44,6 +94,8 @@
 		#111115 10px,
 		#111115 20px
 	);
+	background-size: 34.84px 100%;
+	animation: zzz-tape-scroll 2.8s linear infinite;
 }
 
 .zzz-hazard-orange {
@@ -54,6 +106,8 @@
 		#16161c 7px,
 		#16161c 14px
 	);
+	background-size: 24.39px 100%;
+	animation: zzz-tape-scroll-sm 2.4s linear infinite;
 }
 
 /* Chunky hardware chassis panel */
@@ -65,6 +119,10 @@
 		0 0 0 1px var(--z-line),
 		0 6px 0 #060608;
 	border-radius: 18px;
+	transition:
+		transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 180ms ease,
+		box-shadow 180ms ease;
 }
 
 .zzz-card-bevel {
@@ -74,36 +132,83 @@
 	box-shadow:
 		inset 0 1px 0 rgba(255, 255, 255, 0.08),
 		0 5px 0 #060608;
+	transition:
+		transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 180ms ease,
+		box-shadow 180ms ease;
+}
+
+.zzz-card-bevel:hover,
+.zzz-lift:hover {
+	transform: translateY(-2px);
+	border-color: rgba(216, 255, 0, 0.72);
+	box-shadow:
+		inset 0 1px 0 rgba(255, 255, 255, 0.12),
+		0 7px 0 #060608;
 }
 
 .zzz-subcard {
 	background: var(--z-chassis);
 	border: 2px solid var(--z-line);
 	border-radius: 14px;
+	transition:
+		transform 160ms cubic-bezier(0.22, 1, 0.36, 1),
+		border-color 160ms ease;
 }
+
+/* Live signal sonar dot */
+.zzz-live-dot {
+	position: relative;
+	display: inline-block;
+}
+
+.zzz-live-dot::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: inherit;
+	animation: zzz-sonar 1.9s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Entrance animations */
+.zzz-enter {
+	animation: zzz-snap-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.zzz-stagger-1 { animation-delay: 40ms; }
+.zzz-stagger-2 { animation-delay: 80ms; }
+.zzz-stagger-3 { animation-delay: 120ms; }
+.zzz-stagger-4 { animation-delay: 160ms; }
+.zzz-stagger-5 { animation-delay: 200ms; }
+.zzz-stagger-6 { animation-delay: 240ms; }
 
 /* Kinetic slanted ZZZ pill button */
 .zzz-pill {
+	position: relative;
+	overflow: hidden;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	transform: skewX(-11deg);
 	border-radius: 999px;
 	transition:
-		transform 110ms cubic-bezier(0.22, 1, 0.36, 1),
-		background-color 120ms ease,
-		border-color 120ms ease,
-		color 120ms ease;
+		transform 140ms cubic-bezier(0.22, 1, 0.36, 1),
+		background-color 140ms ease,
+		border-color 140ms ease,
+		color 140ms ease,
+		box-shadow 140ms ease;
 	cursor: pointer;
 	white-space: nowrap;
 }
 
 .zzz-pill > * {
 	transform: skewX(11deg);
+	transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .zzz-pill:hover:not(:disabled) {
-	transform: skewX(-6deg) translateY(-1px);
+	transform: skewX(-6deg) translateY(-1.5px);
 }
 
 .zzz-pill:hover:not(:disabled) > * {
@@ -111,7 +216,7 @@
 }
 
 .zzz-pill:active:not(:disabled) {
-	transform: skewX(-11deg) translateY(1px);
+	transform: skewX(-11deg) translateY(1.5px);
 }
 
 .zzz-pill:disabled {
@@ -129,8 +234,28 @@
 	font-weight: 900;
 }
 
+.zzz-btn-volt::after {
+	content: "";
+	position: absolute;
+	top: -50%;
+	left: -60%;
+	width: 45%;
+	height: 200%;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+	transform: rotate(25deg);
+	transition: left 360ms cubic-bezier(0.22, 1, 0.36, 1);
+	pointer-events: none;
+}
+
 .zzz-btn-volt:hover:not(:disabled) {
 	background: var(--z-volt-hover);
+	box-shadow:
+		0 4px 0 var(--z-black),
+		inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.zzz-btn-volt:hover:not(:disabled)::after {
+	left: 130%;
 }
 
 .zzz-btn-orange {
@@ -175,12 +300,13 @@
 	color: var(--z-ink);
 	border: 2px solid var(--z-line-hi);
 	border-radius: 12px;
-	transition: border-color 120ms ease;
+	transition: border-color 140ms ease, box-shadow 140ms ease;
 }
 
 .zzz-input:focus {
 	outline: none;
 	border-color: var(--z-volt);
+	box-shadow: 0 0 0 2px rgba(216, 255, 0, 0.16);
 }
 
 /* ZZZ Switch */
@@ -192,7 +318,7 @@
 	border: 2px solid var(--z-line-hi);
 	position: relative;
 	cursor: pointer;
-	transition: all 140ms ease;
+	transition: background-color 160ms ease, border-color 160ms ease;
 	flex-shrink: 0;
 }
 
@@ -209,7 +335,7 @@
 	position: absolute;
 	top: 2px;
 	left: 2px;
-	transition: transform 140ms cubic-bezier(0.22, 1, 0.36, 1), background-color 140ms ease;
+	transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1), background-color 160ms ease;
 }
 
 .zzz-switch[aria-checked="true"] .zzz-switch-knob {
@@ -229,8 +355,27 @@
 	background: #2b2d31;
 	border-left: 4px solid var(--z-volt);
 	border-radius: 4px;
+	transition: border-left-color 200ms ease;
 }
 
 .dot-genshin { background: #38bdf8; }
 .dot-hsr { background: #a78bfa; }
 .dot-zzz { background: #d8ff00; }
+
+@media (prefers-reduced-motion: reduce) {
+	.zzz-halftone,
+	.zzz-hazard,
+	.zzz-hazard-orange,
+	.zzz-live-dot::after,
+	.zzz-enter {
+		animation: none !important;
+	}
+	.zzz-pill,
+	.zzz-pill > *,
+	.zzz-card,
+	.zzz-card-bevel,
+	.zzz-subcard,
+	.zzz-switch-knob {
+		transition: none !important;
+	}
+}

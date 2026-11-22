@@ -197,20 +197,22 @@
 					</div>
 				{/if}
 
-				<div class="discord-embed p-3 space-y-1.5" style="border-left-color: {meta.color};">
-					<div class="text-[#b5bac1] font-semibold">
-						{meta.label}: {previewMode === 'livestream' ? copy.liveTitle : copy.title}
+				{#key previewGame + previewMode}
+					<div class="discord-embed p-3 space-y-1.5 zzz-enter" style="border-left-color: {meta.color};">
+						<div class="text-[#b5bac1] font-semibold">
+							{meta.label}: {previewMode === 'livestream' ? copy.liveTitle : copy.title}
+						</div>
+						<div class="font-mono-hdd text-sm font-black text-white tracking-wider">{sample.code}</div>
+						<div>
+							<div class="text-[#949ba4] font-semibold">{copy.rewards}</div>
+							<div class="text-[#dbdee1] mt-0.5">{sample.rewards}</div>
+						</div>
+						<div class="flex items-center justify-between pt-1 text-[#949ba4]">
+							<span>{copy.footer}</span>
+							<span>{sample.status}</span>
+						</div>
 					</div>
-					<div class="font-mono-hdd text-sm font-black text-white tracking-wider">{sample.code}</div>
-					<div>
-						<div class="text-[#949ba4] font-semibold">{copy.rewards}</div>
-						<div class="text-[#dbdee1] mt-0.5">{sample.rewards}</div>
-					</div>
-					<div class="flex items-center justify-between pt-1 text-[#949ba4]">
-						<span>{copy.footer}</span>
-						<span>{sample.status}</span>
-					</div>
-				</div>
+				{/key}
 
 				<div class="pt-0.5">
 					<span class="inline-flex items-center px-3 py-1.5 rounded bg-[#4e5058] text-white font-semibold">

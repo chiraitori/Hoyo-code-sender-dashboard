@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { slide } from 'svelte/transition';
 	import DiscordPreview from '#lib/components/DiscordPreview.svelte';
 	import {
 		GAME_META,
@@ -411,6 +412,7 @@
 
 	{#if statusBanner}
 		<div
+			transition:slide={{ duration: 160 }}
 			class="rounded-xl px-4 py-3 text-xs font-bold border-2 {statusBanner.tone === 'ok'
 				? 'bg-[#172110] border-[#d8ff00] text-[#d8ff00]'
 				: 'bg-[#2b1518] border-[#ef4444] text-[#fca5a5]'}"
@@ -438,8 +440,10 @@
 	</div>
 
 	<div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-		<div class="lg:col-span-7 space-y-5">
-			{#if activeTab === 'channels'}
+		<div class="lg:col-span-7">
+			{#key activeTab}
+				<div class="space-y-5 zzz-enter">
+					{#if activeTab === 'channels'}
 				<section class="zzz-card p-5 space-y-4">
 					<div class="flex items-center justify-between gap-4 pb-3.5 border-b-2 border-[#2a2a34]">
 						<div>
@@ -974,6 +978,8 @@
 					{/if}
 				</section>
 			{/if}
+				</div>
+			{/key}
 		</div>
 
 		<aside class="lg:col-span-5 lg:sticky lg:top-24 space-y-4">

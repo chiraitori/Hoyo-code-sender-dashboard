@@ -73,10 +73,10 @@
 			<div class="flex items-center gap-2.5">
 				{#if data.botStatus}
 					<div
-						class="hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1a1a21] border border-[#31313d] text-xs font-medium"
+						class="hidden xl:flex items-center gap-2 px-3 py-1 rounded-full bg-[#1a1a21] border border-[#31313d] text-xs font-medium"
 					>
 						<span
-							class="w-2 h-2 rounded-full {data.botStatus.online ? 'bg-[#d8ff00]' : 'bg-[#ff5d1f]'}"
+							class="w-2 h-2 rounded-full {data.botStatus.online ? 'bg-[#d8ff00] zzz-live-dot' : 'bg-[#ff5d1f]'}"
 						></span>
 						<span class="text-[#d8d8e4]">
 							{data.botStatus.online ? 'Online' : 'Offline'}
@@ -124,7 +124,11 @@
 	</header>
 
 	<main class="flex-1 max-w-7xl w-full mx-auto px-4 md:px-6 py-6 md:py-8">
-		{@render children()}
+		{#key page.url.pathname}
+			<div class="zzz-enter">
+				{@render children()}
+			</div>
+		{/key}
 	</main>
 
 	<footer class="border-t-2 border-[#08080a] bg-[#111115] mt-10">

@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { flip } from 'svelte/animate';
+	import { fade } from 'svelte/transition';
 	import { GAME_META, type GameCode, type GameId, type LivestreamStatus } from '#lib/types.ts';
 	import type { PageData } from './$types';
 
@@ -149,7 +151,7 @@
 	<div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
 		{#each (['zzz', 'genshin', 'hsr'] as GameId[]) as g}
 			{@const ls = streamByGame.get(g)}
-			<div class="zzz-card p-4 flex items-center justify-between gap-3">
+			<div class="zzz-card zzz-lift p-4 flex items-center justify-between gap-3">
 				<div class="min-w-0">
 					<div class="flex items-center gap-2">
 						<span class="w-2.5 h-2.5 rounded-full {GAME_META[g].dotClass}"></span>
@@ -244,6 +246,8 @@
 		<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 			{#each filteredCodes as item (item.game + item.code)}
 				<article
+					animate:flip={{ duration: 220 }}
+					in:fade={{ duration: 150 }}
 					class="zzz-card-bevel p-4 flex flex-col justify-between gap-3.5 {item.isExpired ? 'opacity-65' : ''}"
 				>
 					<div class="flex items-start justify-between gap-3">

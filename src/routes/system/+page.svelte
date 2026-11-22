@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { invalidateAll } from '$app/navigation';
+	import { slide } from 'svelte/transition';
+	import CountUp from '#lib/components/CountUp.svelte';
 	import { GAME_META, type BotCommand, type GameId, type LivestreamStatus } from '#lib/types.ts';
 	import type { PageData } from './$types';
 
@@ -107,27 +109,32 @@
 
 	<!-- Primary Metrics -->
 	<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Status</div>
-			<div class="font-mono-hdd text-2xl font-black mt-1 {isOnline ? 'text-[#d8ff00]' : 'text-[#ff5d1f]'}">
-				{isOnline ? 'Online' : 'Offline'}
+			<div class="font-mono-hdd text-2xl font-black mt-1 flex items-center gap-2.5 {isOnline ? 'text-[#d8ff00]' : 'text-[#ff5d1f]'}">
+				<span class="w-2.5 h-2.5 rounded-full {isOnline ? 'bg-[#d8ff00] zzz-live-dot' : 'bg-[#ff5d1f]'}"></span>
+				<span>{isOnline ? 'Online' : 'Offline'}</span>
 			</div>
 			{#if data.stats?.version}
 				<div class="text-[11px] font-mono-hdd text-[#9a9aab] mt-1">v{data.stats.version}</div>
 			{/if}
 		</div>
 
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Shards</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
-				{data.stats ? data.stats.shardCount : '—'}
+				{#if data.stats}
+					<CountUp value={data.stats.shardCount} duration={400} />
+				{:else}
+					—
+				{/if}
 			</div>
 			<div class="text-[11px] text-[#9a9aab] mt-1">
 				{data.stats ? `${data.stats.guildCount.toLocaleString()} servers` : '—'}
 			</div>
 		</div>
 
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Uptime</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
 				{data.stats ? formatUptime(data.stats.uptime) : '—'}
@@ -137,10 +144,14 @@
 			</div>
 		</div>
 
-		<div class="zzz-card p-4">
+		<div class="zzz-card zzz-lift p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Gateway ping</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
-				{data.stats && data.stats.ping >= 0 ? `${data.stats.ping} ms` : '—'}
+				{#if data.stats && data.stats.ping >= 0}
+					<CountUp value={data.stats.ping} duration={450} suffix=" ms" />
+				{:else}
+					—
+				{/if}
 			</div>
 			<div class="text-[11px] text-[#9a9aab] mt-1">
 				{data.stats ? `${data.stats.channelCount.toLocaleString()} channels` : '—'}
@@ -240,7 +251,7 @@
 						</div>
 
 						{#if isOpen && cmd.options}
-							<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+							<div transition:slide={{ duration: 180 }} class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
 								{#each cmd.options as opt (opt.name)}
 									<div class="zzz-subcard px-3 py-2 text-xs flex items-start justify-between gap-2">
 										<div>
