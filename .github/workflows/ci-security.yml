@@ -1,0 +1,49 @@
+name: CI & Security Audit
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '0 2 * * 1'
+
+jobs:
+  ci-security:
+    runs-on: ubuntu-24.04
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run privacy check
+        run: npm run test:privacy
+
+      - name: Run lint
+        run: npm run lint
+
+      - name: Run production security audit
+        run: |
+          npm audit --omit=dev --json > audit-results.json || true
+          HIGH_VULNS=$(jq '.metadata.vulnerabilities.high' audit-results.json)
+          CRITICAL_VULNS=$(jq '.metadata.vulnerabilities.critical' audit-results.json)
+          echo "audit-results.json: high=$HIGH_VULNS critical=$CRITICAL_VULNS"
+          if [ "$HIGH_VULNS" -gt 0 ] || [ "$CRITICAL_VULNS" -gt 0 ]; then
+            echo "::error::Security audit failed due to high/critical vulnerabilities"
+            exit 1
+          fi
