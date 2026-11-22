@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import { fetchBotGuildIds } from '#lib/server/botBridge.ts';
+import { fetchBotGuildMap } from '#lib/server/botBridge.ts';
 import {
 	buildBotInviteUrl,
 	canManageGuild,
@@ -17,9 +17,9 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 		};
 	}
 
-	const [userGuildResult, botGuildIds] = await Promise.all([
+	const [userGuildResult, botGuildMap] = await Promise.all([
 		fetchUserGuilds(cookies),
-		fetchBotGuildIds(locals.user.id)
+		fetchBotGuildMap(locals.user.id)
 	]);
 
 	if (!userGuildResult.guilds) {
@@ -36,15 +36,20 @@ export const load: PageServerLoad = async ({ cookies, locals }) => {
 
 	const manageable: GuildSummary[] = userGuildResult.guilds
 		.filter((g) => canManageGuild(g))
-		.map((g) => ({
-			id: g.id,
-			name: g.name,
-			icon: g.icon
-				? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128`
-				: null,
-			owner: g.owner,
-			botPresent: botGuildIds.has(g.id)
-		}))
+		.map((g) => {
+			const botMeta = botGuildMap.get(g.id);
+			return {
+				id: g.id,
+				name: g.name,
+				icon: g.icon
+					? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128`
+					: null,
+				owner: g.owner,
+				botPresent: Boolean(botMeta),
+				memberCount: botMeta?.memberCount,
+				joinedAt: botMeta?.joinedAt ?? null
+			};
+		})
 		.sort((a, b) => Number(b.botPresent) - Number(a.botPresent) || a.name.localeCompare(b.name));
 
 	return {

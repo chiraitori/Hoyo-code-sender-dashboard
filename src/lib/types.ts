@@ -48,8 +48,35 @@ export interface GuildSummary {
 	name: string;
 	icon: string | null;
 	memberCount?: number;
+	joinedAt?: string | null;
 	owner?: boolean;
 	botPresent: boolean;
+}
+
+export interface LivestreamStatus {
+	game: GameId;
+	version: string | null;
+	streamTime: number;
+	disabled: boolean;
+	found: boolean;
+	distributed: boolean;
+	source: string | null;
+	codeCount: number;
+}
+
+export interface ChannelDiagnosticTarget {
+	label: string;
+	id: string | null;
+	name: string | null;
+	status: 'ok' | 'unset' | 'missing' | 'missing_embed';
+	canEmbed: boolean | null;
+}
+
+export interface ChannelCheckResult {
+	valid: boolean;
+	error: string | null;
+	checkedAt: string;
+	targets: ChannelDiagnosticTarget[];
 }
 
 export interface GuildChannel {
@@ -57,6 +84,7 @@ export interface GuildChannel {
 	name: string;
 	type: number;
 	position: number;
+	canEmbed?: boolean;
 }
 
 export interface GuildThread {
@@ -116,6 +144,11 @@ export interface ServerSettings {
 			nap: boolean;
 		};
 	};
+	channelStatus?: {
+		isInvalid: boolean;
+		lastError: string | null;
+		lastChecked: string | null;
+	};
 }
 
 export type SupportedLanguage = 'en' | 'jp' | 'vi';
@@ -130,7 +163,15 @@ export interface ServerSnapshot {
 
 export const GAME_META: Record<
 	GameId,
-	{ label: string; short: string; tape: string; dotClass: string; color: string; redeemBase: string }
+	{
+		label: string;
+		short: string;
+		tape: string;
+		dotClass: string;
+		color: string;
+		redeemBase: string;
+		portalUrl: string;
+	}
 > = {
 	zzz: {
 		label: 'Zenless Zone Zero',
@@ -138,7 +179,8 @@ export const GAME_META: Record<
 		tape: 'TAPE 01',
 		dotClass: 'dot-zzz',
 		color: '#d8ff00',
-		redeemBase: 'https://zenless.hoyoverse.com/redemption?code='
+		redeemBase: 'https://zenless.hoyoverse.com/redemption?code=',
+		portalUrl: 'https://zenless.hoyoverse.com/redemption'
 	},
 	genshin: {
 		label: 'Genshin Impact',
@@ -146,7 +188,8 @@ export const GAME_META: Record<
 		tape: 'TAPE 02',
 		dotClass: 'dot-genshin',
 		color: '#38bdf8',
-		redeemBase: 'https://genshin.hoyoverse.com/en/gift?code='
+		redeemBase: 'https://genshin.hoyoverse.com/en/gift?code=',
+		portalUrl: 'https://genshin.hoyoverse.com/en/gift'
 	},
 	hsr: {
 		label: 'Honkai: Star Rail',
@@ -154,7 +197,8 @@ export const GAME_META: Record<
 		tape: 'TAPE 03',
 		dotClass: 'dot-hsr',
 		color: '#a78bfa',
-		redeemBase: 'https://hsr.hoyoverse.com/gift?code='
+		redeemBase: 'https://hsr.hoyoverse.com/gift?code=',
+		portalUrl: 'https://hsr.hoyoverse.com/gift'
 	}
 };
 

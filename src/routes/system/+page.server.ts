@@ -1,11 +1,25 @@
 import type { PageServerLoad } from './$types';
-import { fetchBotCommands, fetchBotStats } from '#lib/server/botBridge.ts';
+import {
+	fetchAllCodes,
+	fetchBotCommands,
+	fetchBotStats,
+	fetchLivestreams
+} from '#lib/server/botBridge.ts';
 
 export const load: PageServerLoad = async () => {
-	const [stats, commands] = await Promise.all([fetchBotStats(), fetchBotCommands()]);
+	const [stats, commands, codesResult, livestreams] = await Promise.all([
+		fetchBotStats(),
+		fetchBotCommands(),
+		fetchAllCodes(),
+		fetchLivestreams()
+	]);
 
 	return {
 		stats,
-		commands
+		commands,
+		codes: codesResult.codes,
+		codesSource: codesResult.source,
+		fetchedAt: codesResult.fetchedAt,
+		livestreams
 	};
 };

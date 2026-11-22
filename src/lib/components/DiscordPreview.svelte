@@ -18,6 +18,7 @@
 	}
 
 	let { guild, config, settings, language, previewGame, onSelectGame }: Props = $props();
+	let previewMode = $state<'regular' | 'livestream'>('regular');
 
 	const SAMPLES: Record<GameId, { code: string; rewards: string; status: string }> = {
 		zzz: {
@@ -39,22 +40,25 @@
 
 	const LANG_COPY: Record<
 		SupportedLanguage,
-		{ title: string; rewards: string; redeem: string; footer: string }
+		{ title: string; liveTitle: string; rewards: string; redeem: string; footer: string }
 	> = {
 		en: {
 			title: 'New Redemption Code',
+			liveTitle: 'Special Program Livestream Code',
 			rewards: 'Rewards',
 			redeem: 'Redeem on HoYoLAB',
 			footer: 'HoYo Code Sender'
 		},
 		jp: {
 			title: '新しい交換コード',
+			liveTitle: '予告番組 交換コード',
 			rewards: '報酬',
 			redeem: 'HoYoLABで交換する',
 			footer: 'HoYo Code Sender'
 		},
 		vi: {
 			title: 'Mã Đổi Thưởng Mới',
+			liveTitle: 'Mã Livestream Phiên Bản Mới',
 			rewards: 'Phần thưởng',
 			redeem: 'Đổi trên HoYoLAB',
 			footer: 'HoYo Code Sender'
@@ -65,7 +69,7 @@
 	const sample = $derived(SAMPLES[previewGame]);
 	const copy = $derived(LANG_COPY[language] ?? LANG_COPY.en);
 
-	const roleName = $derived.by(() => {
+	const selectedRole = $derived.by(() => {
 		const roleId =
 			previewGame === 'genshin'
 				? config.genshinRole
@@ -74,23 +78,37 @@
 					: config.zzzRole;
 		if (!roleId) return null;
 		const found = guild.roles.find((r) => r.id === roleId);
-		return found ? `@${found.name}` : '@Role';
+		return found ?? null;
+	});
+
+	const roleBadgeStyle = $derived.by(() => {
+		const c = selectedRole?.color;
+		if (c && c !== '#000000') {
+			return `color: ${c}; background-color: rgba(88, 101, 242, 0.16);`;
+		}
+		return 'color: #c9cdfb; background-color: rgba(88, 101, 242, 0.25);';
 	});
 
 	const targetChannelLabel = $derived.by(() => {
 		const threadId = config.forumThreads?.[previewGame];
-		if (settings.autoSendOptions.threads && threadId) {
+		if (previewMode === 'regular' && settings.autoSendOptions.threads && threadId) {
 			const thread = guild.threads.find((t) => t.id === threadId);
 			if (thread) return `#${thread.name} (thread)`;
 		}
-		const chId = config.livestreamChannel || config.channel;
+		const chId =
+			previewMode === 'livestream'
+				? config.livestreamChannel || config.channel
+				: config.channel || (settings.autoSendOptions.threads ? threadId : null);
 		if (!chId) return 'No channel selected';
 		const ch = guild.channels.find((c) => c.id === chId);
-		return ch ? `#${ch.name}` : '#channel';
+		if (ch) return `#${ch.name}`;
+		const th = guild.threads.find((t) => t.id === chId);
+		return th ? `#${th.name} (thread)` : '#channel';
 	});
 
 	const isGameEnabled = $derived.by(() => {
 		if (!settings.autoSendEnabled) return false;
+		if (previewMode === 'livestream' && !settings.livestreamAnnouncementsEnabled) return false;
 		if (!settings.favoriteGames.enabled) return true;
 		if (previewGame === 'genshin') return settings.favoriteGames.games.genshin;
 		if (previewGame === 'hsr') return settings.favoriteGames.games.hkrpg;
@@ -98,13 +116,19 @@
 	});
 
 	const hasDestination = $derived(
-		Boolean(config.channel || config.livestreamChannel || config.forumThreads?.[previewGame])
+		previewMode === 'livestream'
+			? Boolean(config.livestreamChannel || config.channel)
+			: Boolean(
+					(settings.autoSendOptions.channel && config.channel) ||
+						(settings.autoSendOptions.threads && config.forumThreads?.[previewGame]) ||
+						config.channel
+				)
 	);
 	const willDeliver = $derived(isGameEnabled && hasDestination);
 </script>
 
 <div class="space-y-3">
-	<div class="flex items-center justify-between gap-2">
+	<div class="flex flex-wrap items-center justify-between gap-2">
 		<span class="text-xs font-black text-white">Message preview</span>
 		<div class="flex items-center gap-1.5">
 			{#each (['zzz', 'genshin', 'hsr'] as GameId[]) as g}
@@ -120,6 +144,23 @@
 				</button>
 			{/each}
 		</div>
+	</div>
+
+	<div class="grid grid-cols-2 gap-1.5">
+		<button
+			type="button"
+			onclick={() => (previewMode = 'regular')}
+			class="zzz-pill px-3 py-1.5 text-xs {previewMode === 'regular' ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
+		>
+			<span>Regular drop</span>
+		</button>
+		<button
+			type="button"
+			onclick={() => (previewMode = 'livestream')}
+			class="zzz-pill px-3 py-1.5 text-xs {previewMode === 'livestream' ? 'zzz-btn-orange' : 'zzz-btn-dark'}"
+		>
+			<span>Livestream notice</span>
+		</button>
 	</div>
 
 	<div class="discord-box p-4 text-xs space-y-2.5">
@@ -148,16 +189,18 @@
 					<span class="text-[#949ba4]">Preview</span>
 				</div>
 
-				{#if roleName}
+				{#if selectedRole}
 					<div>
-						<span class="px-1.5 py-0.5 rounded bg-[#5865f2]/25 text-[#c9cdfb] font-semibold">
-							{roleName}
+						<span class="px-1.5 py-0.5 rounded font-semibold" style={roleBadgeStyle}>
+							@{selectedRole.name}
 						</span>
 					</div>
 				{/if}
 
 				<div class="discord-embed p-3 space-y-1.5" style="border-left-color: {meta.color};">
-					<div class="text-[#b5bac1] font-semibold">{meta.label}: {copy.title}</div>
+					<div class="text-[#b5bac1] font-semibold">
+						{meta.label}: {previewMode === 'livestream' ? copy.liveTitle : copy.title}
+					</div>
 					<div class="font-mono-hdd text-sm font-black text-white tracking-wider">{sample.code}</div>
 					<div>
 						<div class="text-[#949ba4] font-semibold">{copy.rewards}</div>

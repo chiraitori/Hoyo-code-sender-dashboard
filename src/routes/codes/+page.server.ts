@@ -1,17 +1,34 @@
 import type { PageServerLoad } from './$types';
-import { fetchAllCodes } from '#lib/server/botBridge.ts';
+import { fetchAllCodes, fetchLivestreams } from '#lib/server/botBridge.ts';
 import type { GameId } from '#lib/types.ts';
 
+function parseGameParam(raw: string | null): GameId | 'all' {
+	switch (raw?.toLowerCase()) {
+		case 'zzz':
+		case 'nap':
+		case 'zenless-zone-zero':
+			return 'zzz';
+		case 'genshin':
+		case 'genshin-impact':
+			return 'genshin';
+		case 'hsr':
+		case 'hkrpg':
+		case 'starrail':
+		case 'honkai-star-rail':
+			return 'hsr';
+		default:
+			return 'all';
+	}
+}
+
 export const load: PageServerLoad = async ({ url }) => {
-	const result = await fetchAllCodes();
-	const rawGame = url.searchParams.get('game');
-	const initialGame: GameId | 'all' =
-		rawGame === 'zzz' || rawGame === 'genshin' || rawGame === 'hsr' ? rawGame : 'all';
+	const [result, livestreams] = await Promise.all([fetchAllCodes(), fetchLivestreams()]);
 
 	return {
 		codes: result.codes,
 		source: result.source,
 		fetchedAt: result.fetchedAt,
-		initialGame
+		livestreams,
+		initialGame: parseGameParam(url.searchParams.get('game'))
 	};
 };

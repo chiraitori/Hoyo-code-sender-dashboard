@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { GAME_META, type GameId } from '#lib/types.ts';
+	import { GAME_META, type GameId, type LivestreamStatus } from '#lib/types.ts';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -23,10 +23,27 @@
 		return picked.slice(0, 4);
 	});
 
-	const countByGame = $derived({
-		zzz: data.activeCodes.filter((c) => c.game === 'zzz').length,
-		genshin: data.activeCodes.filter((c) => c.game === 'genshin').length,
-		hsr: data.activeCodes.filter((c) => c.game === 'hsr').length
+	const gameCards = $derived.by(() => {
+		const streamMap = new Map<GameId, LivestreamStatus>();
+		for (const ls of data.livestreams) {
+			streamMap.set(ls.game, ls);
+		}
+		return (['zzz', 'genshin', 'hsr'] as GameId[]).map((game) => {
+			const gameCodes = data.allCodes.filter((c) => c.game === game);
+			const active = gameCodes.filter((c) => !c.isExpired);
+			const livestreamCount = active.filter((c) => c.isLivestream).length;
+			const expiredCount = gameCodes.length - active.length;
+			const latest = active[0] ?? null;
+			return {
+				game,
+				meta: GAME_META[game],
+				activeCount: active.length,
+				livestreamCount,
+				expiredCount,
+				latest,
+				livestream: streamMap.get(game) ?? null
+			};
+		});
 	});
 
 	async function copyCode(code: string) {
@@ -40,6 +57,32 @@
 			if (copiedCode === code) copiedCode = null;
 		}, 1500);
 	}
+
+	function formatStreamBadge(ls: LivestreamStatus | null): string {
+		if (!ls || ls.disabled) return 'Tracker idle';
+		if (ls.found && ls.distributed) return ls.version ? `v${ls.version} distributed` : 'Codes distributed';
+		if (ls.found) return ls.version ? `v${ls.version} ready` : 'Codes found';
+		if (ls.streamTime > 0) {
+			const diffSec = ls.streamTime - Math.floor(Date.now() / 1000);
+			if (diffSec > 0) {
+				const d = Math.floor(diffSec / 86400);
+				const h = Math.floor((diffSec % 86400) / 3600);
+				return `v${ls.version || '?'} in ${d > 0 ? `${d}d ` : ''}${h}h`;
+			}
+			return ls.version ? `v${ls.version} tracked` : 'Recently tracked';
+		}
+		return ls.version ? `v${ls.version} queued` : 'Monitoring';
+	}
+
+	function formatUptime(sec: number): string {
+		if (!Number.isFinite(sec) || sec <= 0) return '—';
+		const d = Math.floor(sec / 86400);
+		const h = Math.floor((sec % 86400) / 3600);
+		const m = Math.floor((sec % 3600) / 60);
+		if (d > 0) return `${d}d ${h}h`;
+		if (h > 0) return `${h}h ${m}m`;
+		return `${m}m`;
+	}
 </script>
 
 <div class="space-y-6">
@@ -52,6 +95,22 @@
 			></div>
 
 			<div class="space-y-4 relative z-10">
+				{#if data.stats?.botUser}
+					<div class="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#131318] border border-[#32323f] text-xs">
+						{#if data.stats.botUser.avatar}
+							<img
+								src={data.stats.botUser.avatar}
+								alt={data.stats.botUser.username}
+								class="w-5 h-5 rounded-full"
+							/>
+						{/if}
+						<span class="font-bold text-white">{data.stats.botUser.username}</span>
+						{#if data.stats.version}
+							<span class="font-mono-hdd text-[#d8ff00] font-bold">v{data.stats.version}</span>
+						{/if}
+					</div>
+				{/if}
+
 				<h1 class="text-4xl md:text-5xl font-black tracking-tight leading-[1.03] text-white">
 					Redemption codes, straight to your Discord server.
 				</h1>
@@ -82,17 +141,17 @@
 				</div>
 
 				<div class="grid grid-cols-3 gap-2.5 pt-4 border-t-2 border-[#2a2a34]">
-					{#each (['zzz', 'genshin', 'hsr'] as GameId[]) as g}
+					{#each gameCards as card (card.game)}
 						<a
-							href={`/codes?game=${g}`}
+							href={`/codes?game=${card.game}`}
 							class="zzz-subcard p-3 text-left hover:border-[#d8ff00] transition-colors block"
 						>
 							<div class="flex items-center justify-between text-xs text-[#9a9aab]">
-								<span class="font-bold text-white">{GAME_META[g].short}</span>
-								<span class="w-2 h-2 rounded-full {GAME_META[g].dotClass}"></span>
+								<span class="font-bold text-white">{card.meta.short}</span>
+								<span class="w-2 h-2 rounded-full {card.meta.dotClass}"></span>
 							</div>
 							<div class="text-xs font-mono-hdd text-[#d8ff00] font-bold mt-2">
-								{countByGame[g]} active
+								{card.activeCount} active
 							</div>
 						</a>
 					{/each}
@@ -107,7 +166,7 @@
 					<span class="px-2 py-0.5 rounded bg-[#ff5d1f] text-[#08080a] text-xs font-black">
 						Live
 					</span>
-					<span class="text-xs font-black text-white">Active codes</span>
+					<span class="text-xs font-black text-white">Latest active codes</span>
 				</div>
 				<a href="/codes" class="text-xs font-bold text-[#d8ff00] hover:underline">
 					View all
@@ -166,7 +225,7 @@
 	</section>
 
 	<!-- Key Numbers -->
-	<section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+	<section class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
 		<div class="zzz-card p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Servers</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
@@ -180,37 +239,142 @@
 			</div>
 		</div>
 		<div class="zzz-card p-4">
+			<div class="text-xs font-semibold text-[#9a9aab]">Channels</div>
+			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
+				{data.stats ? data.stats.channelCount.toLocaleString() : '—'}
+			</div>
+		</div>
+		<div class="zzz-card p-4">
+			<div class="text-xs font-semibold text-[#9a9aab]">Shards</div>
+			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
+				{data.stats ? data.stats.shardCount : '—'}
+			</div>
+		</div>
+		<div class="zzz-card p-4">
 			<div class="text-xs font-semibold text-[#9a9aab]">Gateway ping</div>
 			<div class="font-mono-hdd text-2xl font-black text-white mt-1">
 				{data.stats && data.stats.ping >= 0 ? `${data.stats.ping} ms` : '—'}
 			</div>
 		</div>
 		<div class="zzz-card p-4">
-			<div class="text-xs font-semibold text-[#9a9aab]">Active codes</div>
+			<div class="text-xs font-semibold text-[#9a9aab]">Uptime</div>
 			<div class="font-mono-hdd text-2xl font-black text-[#d8ff00] mt-1">
-				{data.activeCodes.length}
+				{data.stats ? formatUptime(data.stats.uptime) : '—'}
 			</div>
 		</div>
 	</section>
 
-	<!-- Highlights -->
-	<section class="grid grid-cols-1 md:grid-cols-12 gap-4">
-		<div class="md:col-span-4 zzz-card-bevel p-5 space-y-2">
-			<h2 class="text-base font-black text-white">No duplicate posts</h2>
-			<p class="text-xs text-[#a9a9b8] leading-relaxed">
-				Each code is tracked per channel and thread so your server only gets notified once.
-			</p>
+	<!-- Supported Games & Livestream Tracker -->
+	<section class="space-y-3">
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			<h2 class="text-lg font-black text-white">Supported games</h2>
+			<a href="/codes" class="text-xs font-bold text-[#d8ff00] hover:underline">
+				Open code explorer
+			</a>
 		</div>
-		<div class="md:col-span-5 zzz-card-bevel p-5 space-y-2">
-			<h2 class="text-base font-black text-white">Channels and forum threads</h2>
-			<p class="text-xs text-[#a9a9b8] leading-relaxed">
-				Send livestream codes to a separate channel or split Genshin, Star Rail, and ZZZ into their own forum threads.
-			</p>
+
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+			{#each gameCards as card (card.game)}
+				<div class="zzz-card p-5 flex flex-col justify-between gap-4">
+					<div class="space-y-3">
+						<div class="flex items-start justify-between gap-2">
+							<div class="flex items-center gap-2.5">
+								<span class="w-3 h-3 rounded-full {card.meta.dotClass}"></span>
+								<h3 class="text-base font-black text-white">{card.meta.label}</h3>
+							</div>
+							<span class="font-mono-hdd text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#131318] border border-[#31313d] text-[#d8ff00]">
+								{card.activeCount} active
+							</span>
+						</div>
+
+						<div class="flex flex-wrap items-center gap-2 text-xs text-[#9a9aab]">
+							<span>{formatStreamBadge(card.livestream)}</span>
+							{#if card.livestreamCount > 0}
+								<span>· {card.livestreamCount} livestream</span>
+							{/if}
+						</div>
+
+						{#if card.latest}
+							<div class="zzz-subcard p-3 space-y-1">
+								<div class="text-[11px] font-bold text-[#9a9aab]">Newest code</div>
+								<div class="flex items-center justify-between gap-2">
+									<span class="font-mono-hdd text-sm font-black text-white truncate">
+										{card.latest.code}
+									</span>
+									<button
+										type="button"
+										onclick={() => copyCode(card.latest!.code)}
+										class="text-xs font-bold text-[#d8ff00] hover:underline shrink-0"
+									>
+										{copiedCode === card.latest.code ? 'Copied' : 'Copy'}
+									</button>
+								</div>
+							</div>
+						{/if}
+					</div>
+
+					<div class="flex items-center justify-between gap-2 pt-3 border-t-2 border-[#2a2a34]">
+						<a
+							href={card.meta.portalUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="text-xs font-bold text-[#c7c7d4] hover:text-white"
+						>
+							Redeem portal
+						</a>
+						<a
+							href={`/codes?game=${card.game}`}
+							class="zzz-pill zzz-btn-dark px-3.5 py-1.5 text-xs"
+						>
+							<span>Browse {card.meta.short}</span>
+						</a>
+					</div>
+				</div>
+			{/each}
 		</div>
-		<div class="md:col-span-3 rounded-[18px] p-5 bg-[#d8ff00] text-[#08080a] border-2 border-[#08080a] shadow-[0_6px_0_#060608] space-y-1.5">
-			<h2 class="text-base font-black leading-tight">Three languages</h2>
+	</section>
+
+	<!-- Capabilities Matrix -->
+	<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+		<a href="/servers" class="zzz-card-bevel p-5 space-y-1.5 hover:border-[#d8ff00] transition-colors block">
+			<h3 class="text-base font-black text-white">Channels and forum threads</h3>
+			<p class="text-xs text-[#a9a9b8] leading-relaxed">
+				Route standard and livestream drops to separate channels or dedicate forum threads per game without duplicate posts.
+			</p>
+		</a>
+
+		<a href="/servers" class="zzz-card-bevel p-5 space-y-1.5 hover:border-[#d8ff00] transition-colors block">
+			<h3 class="text-base font-black text-white">Per-game roles and filters</h3>
+			<p class="text-xs text-[#a9a9b8] leading-relaxed">
+				Assign separate notification roles for ZZZ, Genshin Impact, and Star Rail, and toggle games per server.
+			</p>
+		</a>
+
+		<a href="/servers" class="zzz-card-bevel p-5 space-y-1.5 hover:border-[#d8ff00] transition-colors block">
+			<h3 class="text-base font-black text-white">Manual broadcast &amp; diagnostics</h3>
+			<p class="text-xs text-[#a9a9b8] leading-relaxed">
+				Post codes manually from the web console, run live channel permission checks, or send per-game test embeds.
+			</p>
+		</a>
+
+		<a href="/codes" class="zzz-card-bevel p-5 space-y-1.5 hover:border-[#d8ff00] transition-colors block">
+			<h3 class="text-base font-black text-white">Live HoYoLAB reward tracking</h3>
+			<p class="text-xs text-[#a9a9b8] leading-relaxed">
+				Search active and expired codes, copy all active codes at once, and open direct pre-filled HoYoLAB redeem links.
+			</p>
+		</a>
+
+		<a href="/system" class="zzz-card-bevel p-5 space-y-1.5 hover:border-[#d8ff00] transition-colors block">
+			<h3 class="text-base font-black text-white">Full slash command index</h3>
+			<p class="text-xs text-[#a9a9b8] leading-relaxed">
+				Inspect all bot slash commands, required options, shard status, and live livestream hunt status.
+			</p>
+		</a>
+
+		<div class="rounded-[18px] p-5 bg-[#d8ff00] text-[#08080a] border-2 border-[#08080a] shadow-[0_6px_0_#060608] space-y-1.5">
+			<h3 class="text-base font-black leading-tight">Three server languages</h3>
 			<p class="text-xs font-bold opacity-85 leading-relaxed">
-				Alerts and reward names are translated into English, Japanese, and Vietnamese.
+				Bot embeds, test alerts, and reward item names localize automatically into English, Japanese, and Vietnamese.
 			</p>
 		</div>
 	</section>

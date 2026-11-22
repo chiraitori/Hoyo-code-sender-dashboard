@@ -1,13 +1,36 @@
 <script lang="ts">
+	import { invalidateAll } from '$app/navigation';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 	let search = $state('');
+	let filterMode = $state<'all' | 'ready' | 'unlinked'>('all');
+	let sortBy = $state<'ready' | 'members' | 'name'>('ready');
+	let refreshing = $state(false);
+
+	const totalReady = $derived(data.guilds.filter((g) => g.botPresent).length);
+	const totalUnlinked = $derived(data.guilds.filter((g) => !g.botPresent).length);
 
 	const filtered = $derived.by(() => {
 		const q = search.trim().toLowerCase();
-		if (!q) return data.guilds;
-		return data.guilds.filter((g) => g.name.toLowerCase().includes(q) || g.id.includes(q));
+		const matching = data.guilds.filter((g) => {
+			if (filterMode === 'ready' && !g.botPresent) return false;
+			if (filterMode === 'unlinked' && g.botPresent) return false;
+			if (q) {
+				return g.name.toLowerCase().includes(q) || g.id.includes(q);
+			}
+			return true;
+		});
+
+		return [...matching].sort((a, b) => {
+			if (sortBy === 'members') {
+				return (b.memberCount ?? -1) - (a.memberCount ?? -1) || a.name.localeCompare(b.name);
+			}
+			if (sortBy === 'name') {
+				return a.name.localeCompare(b.name);
+			}
+			return Number(b.botPresent) - Number(a.botPresent) || a.name.localeCompare(b.name);
+		});
 	});
 
 	const linkedGuilds = $derived(filtered.filter((g) => g.botPresent));
@@ -19,6 +42,15 @@
 		u.searchParams.set('guild_id', guildId);
 		return u.toString();
 	}
+
+	async function refreshList() {
+		refreshing = true;
+		try {
+			await invalidateAll();
+		} finally {
+			refreshing = false;
+		}
+	}
 </script>
 
 <div class="space-y-6">
@@ -28,16 +60,18 @@
 				Your servers
 			</h1>
 			<p class="text-xs text-[#9a9aab] mt-1">
-				Choose a Discord server to configure notification channels, roles, and game filters.
+				Choose a Discord server to configure notification channels, roles, game filters, or post codes.
 			</p>
 		</div>
-		{#if data.authenticated && data.guilds.length > 0}
-			<input
-				type="text"
-				bind:value={search}
-				placeholder="Search servers..."
-				class="zzz-input px-3.5 py-2 text-xs font-semibold w-full sm:w-64"
-			/>
+		{#if data.authenticated}
+			<button
+				type="button"
+				onclick={refreshList}
+				disabled={refreshing}
+				class="zzz-pill zzz-btn-dark px-4 py-2 text-xs"
+			>
+				<span>{refreshing ? 'Refreshing...' : 'Refresh servers'}</span>
+			</button>
 		{/if}
 	</div>
 
@@ -62,52 +96,102 @@
 			</a>
 		</div>
 	{:else}
-		<section class="space-y-3">
-			<h2 class="text-xs font-black text-[#d8ff00]">
-				Ready to configure ({linkedGuilds.length})
-			</h2>
+		<!-- Summary & Filter Bar -->
+		<div class="zzz-card p-4 flex flex-wrap items-center justify-between gap-3">
+			<div class="flex flex-wrap items-center gap-2">
+				<button
+					type="button"
+					onclick={() => (filterMode = 'all')}
+					class="zzz-pill px-3.5 py-1.5 text-xs {filterMode === 'all' ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
+				>
+					<span>All ({data.guilds.length})</span>
+				</button>
+				<button
+					type="button"
+					onclick={() => (filterMode = 'ready')}
+					class="zzz-pill px-3.5 py-1.5 text-xs {filterMode === 'ready' ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
+				>
+					<span>Bot ready ({totalReady})</span>
+				</button>
+				<button
+					type="button"
+					onclick={() => (filterMode === 'unlinked')}
+					class="zzz-pill px-3.5 py-1.5 text-xs {filterMode === 'unlinked' ? 'zzz-btn-volt' : 'zzz-btn-dark'}"
+				>
+					<span>Needs invite ({totalUnlinked})</span>
+				</button>
+			</div>
 
-			{#if linkedGuilds.length > 0}
-				<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-					{#each linkedGuilds as guild (guild.id)}
-						<div class="zzz-card-bevel p-4 flex items-center justify-between gap-3">
-							<div class="flex items-center gap-3 min-w-0">
-								{#if guild.icon}
-									<img
-										src={guild.icon}
-										alt={guild.name}
-										class="w-11 h-11 rounded-xl border-2 border-[#08080a] shrink-0"
-									/>
-								{:else}
-									<div
-										class="w-11 h-11 rounded-xl bg-[#24242d] border-2 border-[#08080a] flex items-center justify-center font-black text-sm text-[#d8ff00] shrink-0"
-									>
-										{guild.name.slice(0, 2).toUpperCase()}
-									</div>
-								{/if}
-								<div class="min-w-0">
-									<div class="text-sm font-black text-white truncate">{guild.name}</div>
-									<div class="text-xs text-[#9a9aab] mt-0.5">
-										{guild.owner ? 'Owner' : 'Manager'}
+			<div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+				<select
+					bind:value={sortBy}
+					aria-label="Sort servers"
+					class="zzz-input px-3 py-2 text-xs font-semibold cursor-pointer"
+				>
+					<option value="ready">Sort: Bot ready</option>
+					<option value="members">Sort: Members</option>
+					<option value="name">Sort: Name</option>
+				</select>
+				<input
+					type="text"
+					bind:value={search}
+					placeholder="Search servers or ID..."
+					class="zzz-input flex-1 sm:w-60 px-3.5 py-2 text-xs font-semibold"
+				/>
+			</div>
+		</div>
+
+		{#if linkedGuilds.length > 0 || filterMode !== 'unlinked'}
+			<section class="space-y-3">
+				<h2 class="text-xs font-black text-[#d8ff00]">
+					Ready to configure ({linkedGuilds.length})
+				</h2>
+
+				{#if linkedGuilds.length > 0}
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+						{#each linkedGuilds as guild (guild.id)}
+							<div class="zzz-card-bevel p-4 flex items-center justify-between gap-3">
+								<div class="flex items-center gap-3 min-w-0">
+									{#if guild.icon}
+										<img
+											src={guild.icon}
+											alt={guild.name}
+											class="w-11 h-11 rounded-xl border-2 border-[#08080a] shrink-0"
+										/>
+									{:else}
+										<div
+											class="w-11 h-11 rounded-xl bg-[#24242d] border-2 border-[#08080a] flex items-center justify-center font-black text-sm text-[#d8ff00] shrink-0"
+										>
+											{guild.name.slice(0, 2).toUpperCase()}
+										</div>
+									{/if}
+									<div class="min-w-0">
+										<div class="text-sm font-black text-white truncate">{guild.name}</div>
+										<div class="text-xs text-[#9a9aab] mt-0.5 flex flex-wrap items-center gap-1.5">
+											<span>{guild.owner ? 'Owner' : 'Manager'}</span>
+											{#if typeof guild.memberCount === 'number'}
+												<span>· {guild.memberCount.toLocaleString()} members</span>
+											{/if}
+										</div>
 									</div>
 								</div>
-							</div>
 
-							<a
-								href={`/servers/${guild.id}`}
-								class="zzz-pill zzz-btn-volt px-4 py-1.5 text-xs shrink-0"
-							>
-								<span>Manage</span>
-							</a>
-						</div>
-					{/each}
-				</div>
-			{:else}
-				<div class="zzz-card p-6 text-xs text-[#9a9aab]">
-					The bot is not in any of your manageable servers yet. Add it to a server below to get started.
-				</div>
-			{/if}
-		</section>
+								<a
+									href={`/servers/${guild.id}`}
+									class="zzz-pill zzz-btn-volt px-4 py-1.5 text-xs shrink-0"
+								>
+									<span>Manage</span>
+								</a>
+							</div>
+						{/each}
+					</div>
+				{:else}
+					<div class="zzz-card p-6 text-xs text-[#9a9aab]">
+						No matching bot-connected servers found.
+					</div>
+				{/if}
+			</section>
+		{/if}
 
 		{#if unlinkedGuilds.length > 0}
 			<section class="space-y-3 pt-2">
@@ -133,7 +217,9 @@
 								{/if}
 								<div class="min-w-0">
 									<div class="text-xs font-bold text-[#d4d4dc] truncate">{guild.name}</div>
-									<div class="text-xs text-[#7a7a8c]">Bot not added</div>
+									<div class="text-xs text-[#7a7a8c]">
+										{guild.owner ? 'Owner' : 'Manager'} · Bot not added
+									</div>
 								</div>
 							</div>
 

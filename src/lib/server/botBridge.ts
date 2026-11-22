@@ -4,6 +4,7 @@ import type {
 	GameCode,
 	GameId,
 	GuildDetails,
+	LivestreamStatus,
 	ServerConfig,
 	ServerSettings,
 	ServerSnapshot,
@@ -247,16 +248,50 @@ export async function fetchBotCommands(): Promise<BotCommand[]> {
 	}
 }
 
-export async function fetchBotGuildIds(actor?: string | null): Promise<Set<string>> {
-	if (!env.MAIN_BOT_API_URL?.trim() || !env.AUTH_BOT_SECRET?.trim()) return new Set();
+export async function fetchLivestreams(): Promise<LivestreamStatus[]> {
+	if (!env.MAIN_BOT_API_URL?.trim()) return [];
+	try {
+		const res = await fetchFromBot('/api/livestreams', {
+			signed: false,
+			timeoutMs: 6000,
+			retries: 1
+		});
+		if (!res.ok) return [];
+		const data = (await res.json()) as { livestreams?: LivestreamStatus[] };
+		return Array.isArray(data.livestreams) ? data.livestreams : [];
+	} catch {
+		return [];
+	}
+}
+
+export async function fetchBotGuildMap(
+	actor?: string | null
+): Promise<Map<string, { memberCount?: number; joinedAt?: string | null }>> {
+	const map = new Map<string, { memberCount?: number; joinedAt?: string | null }>();
+	if (!env.MAIN_BOT_API_URL?.trim() || !env.AUTH_BOT_SECRET?.trim()) return map;
 	try {
 		const res = await fetchFromBot('/api/bot/guilds', { actor, timeoutMs: 8000, retries: 2 });
-		if (!res.ok) return new Set();
-		const raw = (await res.json()) as { guilds?: Array<{ id: string }> };
-		return new Set((raw.guilds || []).map((g) => g.id));
+		if (!res.ok) return map;
+		const raw = (await res.json()) as {
+			guilds?: Array<{ id: string; memberCount?: number; joinedAt?: string | null }>;
+		};
+		for (const g of raw.guilds || []) {
+			if (g?.id) {
+				map.set(g.id, {
+					memberCount: typeof g.memberCount === 'number' ? g.memberCount : undefined,
+					joinedAt: typeof g.joinedAt === 'string' ? g.joinedAt : null
+				});
+			}
+		}
+		return map;
 	} catch {
-		return new Set();
+		return map;
 	}
+}
+
+export async function fetchBotGuildIds(actor?: string | null): Promise<Set<string>> {
+	const map = await fetchBotGuildMap(actor);
+	return new Set(map.keys());
 }
 
 function normalizeServerConfig(serverId: string, raw: Record<string, unknown> | null): ServerConfig {
@@ -413,16 +448,60 @@ export async function saveServerSnapshot(
 
 export async function triggerServerTest(
 	serverId: string,
-	actor?: string | null
+	actor?: string | null,
+	game?: GameId | null
 ): Promise<{ status: number; data: Record<string, unknown> }> {
 	const res = await fetchFromBot(`/api/server/${serverId}/test`, {
+		method: 'POST',
+		body: game ? { game } : {},
+		actor,
+		timeoutMs: 12_000,
+		retries: 1
+	});
+	const data = (await res.json().catch(() => ({ error: 'Failed to send test notification' }))) as Record<
+		string,
+		unknown
+	>;
+	return { status: res.status, data };
+}
+
+export async function triggerServerCheckChannels(
+	serverId: string,
+	actor?: string | null
+): Promise<{ status: number; data: Record<string, unknown> }> {
+	const res = await fetchFromBot(`/api/server/${serverId}/check-channels`, {
 		method: 'POST',
 		body: {},
 		actor,
 		timeoutMs: 12_000,
 		retries: 1
 	});
-	const data = (await res.json().catch(() => ({ error: 'Failed to send test notification' }))) as Record<
+	const data = (await res.json().catch(() => ({ error: 'Failed to check server channels' }))) as Record<
+		string,
+		unknown
+	>;
+	return { status: res.status, data };
+}
+
+export async function triggerServerPostCode(
+	serverId: string,
+	payload: {
+		game: GameId;
+		codes: string[];
+		message?: string;
+		mentionRole?: boolean;
+		target?: 'auto' | 'channel' | 'livestream' | 'thread';
+	},
+	actor?: string | null
+): Promise<{ status: number; data: Record<string, unknown> }> {
+	const res = await fetchFromBot(`/api/server/${serverId}/post-code`, {
+		method: 'POST',
+		body: payload,
+		actor,
+		timeoutMs: 12_000,
+		retries: 1
+	});
+	const data = (await res.json().catch(() => ({ error: 'Failed to post codes' }))) as Record<
 		string,
 		unknown
 	>;

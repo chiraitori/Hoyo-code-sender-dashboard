@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { fetchServerSnapshot } from '#lib/server/botBridge.ts';
+import { fetchAllCodes, fetchServerSnapshot } from '#lib/server/botBridge.ts';
 import { authorizeGuildRequest } from '#lib/server/discordAuth.ts';
 import type { ServerSnapshot } from '#lib/types.ts';
 
@@ -18,7 +18,10 @@ export const load: PageServerLoad = async ({ request, url, cookies, params, loca
 	}
 
 	try {
-		const { status, data } = await fetchServerSnapshot(params.serverId, auth.actorId);
+		const [{ status, data }, codesResult] = await Promise.all([
+			fetchServerSnapshot(params.serverId, auth.actorId),
+			fetchAllCodes()
+		]);
 		if (status !== 200 || 'error' in data) {
 			throw error(
 				status === 404 ? 404 : 503,
@@ -26,7 +29,8 @@ export const load: PageServerLoad = async ({ request, url, cookies, params, loca
 			);
 		}
 		return {
-			snapshot: data as ServerSnapshot
+			snapshot: data as ServerSnapshot,
+			activeCodes: codesResult.codes.filter((c) => !c.isExpired)
 		};
 	} catch (err) {
 		if (err && typeof err === 'object' && 'status' in err) throw err;
